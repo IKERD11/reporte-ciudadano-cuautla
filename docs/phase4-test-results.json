@@ -1,0 +1,16 @@
+{
+  "date": "2026-09-25",
+  "scope": "pilot reports without municipal response",
+  "database_tests": {"passed": 21, "failed": 0},
+  "image_validation_tests": {"passed": 4, "failed": 0},
+  "flutter_tests": {"existing_passed": 10, "new_passed": 4, "failed": 0},
+  "dart_analysis_new_files": "no issues",
+  "edge_type_check": "passed",
+  "web_build": "passed",
+  "http_e2e": "passed: login, category catalog, invalid file rejection, private photo, creation, idempotency, list, detail, signed URL, revoked session",
+  "temporary_upload_purge": {"http_status": 200, "removed": 1, "failed": 0, "remaining_objects": 0},
+  "temporary_account_cleanup": "completed",
+  "paid_services_enabled": false,
+  "limitations": ["Native devices not validated", "No actual municipal response", "No real identity verification", "No offline drafts", "Confirmed evidence retention not yet configured"],
+  "security_advisories": ["Intentional deny-all RLS on two private tables", "Leaked-password protection disabled"]
+}

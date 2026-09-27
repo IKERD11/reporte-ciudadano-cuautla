@@ -1,0 +1,18 @@
+{
+  "date":"2026-09-24",
+  "scope":"synthetic-only",
+  "real_identity_capture_enabled":false,
+  "project":"mnjphahyqmwrvlaephla",
+  "database_tests":{"passed":12,"failed":0},
+  "node_tests":{"passed":6,"failed":0},
+  "flutter_tests":{"passed":10,"failed":0},
+  "static_analysis":"no issues",
+  "edge_type_check":"passed",
+  "plpgsql_check":"no diagnostics",
+  "http_e2e":["login","consent","reject altered file","private front upload","private back upload","submit UNDER_REVIEW","deny citizen read","deny self approval","deny revoked session"],
+  "purge":{"http_status":200,"removed":1,"failed":0,"objects_remaining":0,"active":true,"schedule":"every 15 minutes"},
+  "cleanup":{"temporary_accounts":0,"identity_objects":0,"verified_profiles":0},
+  "security_advisories":["intentional deny-all RLS without policies on private.identity_documents","leaked-password protection disabled; paid feature not enabled"],
+  "limitations":["No camera or real INE upload","No actual OCR or identity authenticity provider","No reviewer assigned","Native Android and iOS not validated"],
+  "paid_services_enabled":false
+}

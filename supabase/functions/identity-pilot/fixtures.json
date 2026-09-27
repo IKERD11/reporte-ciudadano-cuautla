@@ -1,0 +1,14 @@
+{
+  "front": {
+    "sha256": "4b46af6a60d915c4746bea690cb2c2c3231e0d66e34a337a78465dc37ba10807",
+    "bytes": 26989,
+    "width": 960,
+    "height": 600
+  },
+  "back": {
+    "sha256": "5e697ebe4040021e82c43a2f4024dd83392af6c732344b31e16d617c642cabc0",
+    "bytes": 28431,
+    "width": 960,
+    "height": 600
+  }
+}

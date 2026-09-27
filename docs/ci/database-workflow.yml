@@ -1,0 +1,25 @@
+name: Database security
+# Manual only: keep the pilot from consuming runner minutes on every push.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run db:syntax
+      - run: npm run db:start
+      - run: npm run db:reset
+      - run: npm run db:lint
+      - run: npm run db:test
+      - run: npm run db:types
+      - if: always()
+        run: npm run db:stop

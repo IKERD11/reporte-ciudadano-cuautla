@@ -1,0 +1,82 @@
+{
+  "project": "mnjphahyqmwrvlaephla",
+  "rls": [
+    "ok 1 - Todas las tablas públicas tienen RLS",
+    "ok 2 - PostGIS instalado",
+    "ok 3 - Buckets privados",
+    "ok 4 - Fixtures locales cargados",
+    "ok 5 - Estado inicial tiene historial",
+    "ok 6 - Ciudadano A solo lee su reporte",
+    "ok 7 - Ciudadano A no ve ciudadano B",
+    "ok 8 - Catálogos aislados por municipio",
+    "ok 9 - Comentarios internos ocultos",
+    "ok 10 - Metadatos de identidad no se exponen al ciudadano",
+    "ok 11 - Ciudadano no cambia prioridad",
+    "ok 12 - Ciudadano no cambia estado",
+    "ok 13 - No autoverificación",
+    "ok 14 - No escalación de rol",
+    "ok 15 - Creación de reporte cerrada hasta RPC validada",
+    "ok 16 - Ciudadano no lee auditoría",
+    "ok 17 - Operador solo lee asignado",
+    "ok 18 - Operador A no lee municipio B",
+    "ok 19 - Operador sin identity.read no lee INE",
+    "ok 20 - Operador asignado puede leer nota interna",
+    "ok 21 - Administrador lee su municipio",
+    "ok 22 - Administrador no obtiene identity.read implícito",
+    "ok 23 - Viewer tiene lectura municipal",
+    "ok 24 - Viewer no elimina",
+    "ok 25 - Superadmin global explícito",
+    "ok 26 - Superadmin tiene identity.read explícito",
+    "ok 27 - Anónimo no lee reportes",
+    "ok 28 - Anónimo no lee perfiles",
+    "ok 29 - FK rechaza categoría de otro municipio",
+    "ok 30 - FK rechaza departamento de otro municipio",
+    "ok 31 - Operador no puede adquirir alcance global",
+    "ok 32 - Folios de servidor",
+    "ok 33 - Idempotencia única por ciudadano",
+    "ok 34 - Desactivar perfil revoca acceso",
+    "ok 35 - No publicar datos sensibles accidentalmente"
+  ],
+  "storage": [
+    "ok 1 - Ciudadano lee evidencia propia",
+    "ok 2 - INE no tiene lectura directa",
+    "ok 3 - Upload directo rechazado",
+    "ok 4 - Upload INE rechazado hasta flujo seguro",
+    "ok 5 - No modificar evidencia",
+    "ok 6 - No eliminar evidencia",
+    "ok 7 - Operador solo ve evidencia autorizada",
+    "ok 8 - Operador no ve INE",
+    "ok 9 - Ciudadano de municipio B aislado",
+    "ok 10 - Anónimo no lee objetos privados"
+  ],
+  "schema": {
+    "tables": 23,
+    "rls_tables": 23,
+    "reports": 0,
+    "users": 0,
+    "municipalities": 0,
+    "objects": 0,
+    "postgis": "3.3 USE_GEOS=1 USE_PROJ=1 USE_STATS=1"
+  },
+  "migrations": [
+    {
+      "version": "20260919000826",
+      "name": "phase1_schema"
+    },
+    {
+      "version": "20260919000834",
+      "name": "phase1_security"
+    },
+    {
+      "version": "20260919000835",
+      "name": "phase1_storage"
+    },
+    {
+      "version": "20260919001052",
+      "name": "phase1_foreign_key_indexes"
+    }
+  ],
+  "securityAdvisories": [],
+  "plpgsqlCheck": [],
+  "performanceNotes": "Solo índices sin uso; base nueva sin tráfico."
+}

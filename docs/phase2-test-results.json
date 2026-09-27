@@ -1,0 +1,40 @@
+{
+  "project": "mnjphahyqmwrvlaephla",
+  "municipality": "Cuautla, Morelos",
+  "database_validation_date": "2026-09-23",
+  "flutter_validation_date": "2026-09-24",
+  "database_tests": {
+    "auth": 22,
+    "rls": 35,
+    "storage": 10,
+    "failed": 0,
+    "method": "pgTAP via MCP, fixtures and ROLLBACK"
+  },
+  "flutter_tests": {
+    "passed": 9,
+    "failed": 0
+  },
+  "security_advisor_findings": 0,
+  "plpgsql_check_non_trigger_diagnostics": 0,
+  "http": {
+    "email_confirmation_required": true,
+    "anonymous_profiles_status": 401,
+    "anonymous_municipalities_rpc_status": 401,
+    "anonymous_profile_create_rpc_status": 401
+  },
+  "manual_registration": {
+    "accounts": 1,
+    "confirmed": 0,
+    "profiles": 0,
+    "delivery_verified": false
+  },
+  "not_validated": [
+    "email confirmation and recovery end-to-end",
+    "Android device and native callback",
+    "iOS build and device",
+    "Docker local"
+  ],
+  "paid_services_enabled": false,
+  "static_analysis": "dart analyze lib test: no issues",
+  "web_visual_check": "Login rendered; required fields rejected empty submission; user registration confirmation screen preserved"
+}
