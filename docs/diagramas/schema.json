@@ -1,0 +1,1914 @@
+{
+  "migrations": [
+    "20260919000826_phase1_schema.sql",
+    "20260919000834_phase1_security.sql",
+    "20260919000835_phase1_storage.sql",
+    "20260919001052_phase1_foreign_key_indexes.sql",
+    "20260923143505_phase2_auth_profiles.sql",
+    "20260924170343_phase3_synthetic_identity.sql",
+    "20260924170542_phase3_purge_schedule.sql",
+    "20260925174611_phase4_pilot_reports.sql",
+    "20260925174950_phase4_report_list_alias.sql",
+    "20260926004537_phase5_admin_pilot.sql",
+    "20260926005810_phase5_admin_departments.sql",
+    "20260926170146_phase6_notifications.sql",
+    "20260927182748_report_address_location.sql"
+  ],
+  "tables": {
+    "public.municipalities": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "state",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "logo_url",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "is_active",
+          "type": "bool",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [],
+      "foreign": []
+    },
+    "public.profiles": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "first_name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "last_name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "phone",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "identity_status",
+          "type": "public.identity_status",
+          "nullable": false
+        },
+        {
+          "name": "is_active",
+          "type": "bool",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "deleted_at",
+          "type": "timestamptz",
+          "nullable": true
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "id",
+          "municipality_id"
+        ]
+      ],
+      "foreign": [
+        {
+          "columns": [
+            "id"
+          ],
+          "target": "auth.users",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        }
+      ]
+    },
+    "public.roles": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "code",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "code"
+        ]
+      ],
+      "foreign": []
+    },
+    "public.permissions": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "code",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "code"
+        ]
+      ],
+      "foreign": []
+    },
+    "public.role_permissions": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "role_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "permission_id",
+          "type": "uuid",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "role_id",
+        "permission_id"
+      ],
+      "unique": [],
+      "foreign": [
+        {
+          "columns": [
+            "role_id"
+          ],
+          "target": "public.roles",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "permission_id"
+          ],
+          "target": "public.permissions",
+          "references": [
+            "id"
+          ]
+        }
+      ]
+    },
+    "public.user_roles": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "role_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "user_id",
+          "municipality_id",
+          "role_id"
+        ]
+      ],
+      "foreign": [
+        {
+          "columns": [
+            "user_id"
+          ],
+          "target": "public.profiles",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "role_id"
+          ],
+          "target": "public.roles",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "user_id",
+            "municipality_id"
+          ],
+          "target": "public.profiles",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        }
+      ]
+    },
+    "public.priorities": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "rank",
+          "type": "int2",
+          "nullable": false
+        },
+        {
+          "name": "is_active",
+          "type": "bool",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "municipality_id",
+          "name"
+        ],
+        [
+          "municipality_id",
+          "rank"
+        ],
+        [
+          "id",
+          "municipality_id"
+        ]
+      ],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        }
+      ]
+    },
+    "public.report_statuses": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "code",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "is_terminal",
+          "type": "bool",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "code"
+        ]
+      ],
+      "foreign": []
+    },
+    "public.departments": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "is_active",
+          "type": "bool",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "municipality_id",
+          "name"
+        ],
+        [
+          "id",
+          "municipality_id"
+        ]
+      ],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        }
+      ]
+    },
+    "public.zones": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "boundary",
+          "type": "extensions.geometry",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "municipality_id",
+          "name"
+        ],
+        [
+          "id",
+          "municipality_id"
+        ]
+      ],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        }
+      ]
+    },
+    "public.categories": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "icon",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "default_priority_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "requires_photo",
+          "type": "bool",
+          "nullable": false
+        },
+        {
+          "name": "requires_location",
+          "type": "bool",
+          "nullable": false
+        },
+        {
+          "name": "is_public",
+          "type": "bool",
+          "nullable": false
+        },
+        {
+          "name": "is_active",
+          "type": "bool",
+          "nullable": false
+        },
+        {
+          "name": "sort_order",
+          "type": "int4",
+          "nullable": false
+        },
+        {
+          "name": "dynamic_form_schema",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "municipality_id",
+          "name"
+        ],
+        [
+          "id",
+          "municipality_id"
+        ]
+      ],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "default_priority_id",
+            "municipality_id"
+          ],
+          "target": "public.priorities",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        }
+      ]
+    },
+    "public.subcategories": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "category_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "is_active",
+          "type": "bool",
+          "nullable": false
+        },
+        {
+          "name": "sort_order",
+          "type": "int4",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "category_id",
+          "name"
+        ],
+        [
+          "id",
+          "category_id",
+          "municipality_id"
+        ]
+      ],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "category_id",
+            "municipality_id"
+          ],
+          "target": "public.categories",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        }
+      ]
+    },
+    "public.settings": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "identity_retention_days",
+          "type": "int4",
+          "nullable": true
+        },
+        {
+          "name": "evidence_retention_days",
+          "type": "int4",
+          "nullable": true
+        },
+        {
+          "name": "privacy_notice_version",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "privacy_notice_url",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "emergency_contact",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "max_report_images",
+          "type": "int2",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "citizen_registration_enabled",
+          "type": "bool",
+          "nullable": false
+        },
+        {
+          "name": "pilot_reports_enabled",
+          "type": "bool",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "municipality_id"
+      ],
+      "unique": [],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        }
+      ]
+    },
+    "public.consents": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "consent_type",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "privacy_notice_version",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "accepted_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "user_id",
+          "consent_type",
+          "privacy_notice_version"
+        ]
+      ],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "user_id",
+            "municipality_id"
+          ],
+          "target": "public.profiles",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        }
+      ]
+    },
+    "public.identity_verifications": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "provider",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "provider_reference",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "document_type",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "public.identity_status",
+          "nullable": false
+        },
+        {
+          "name": "verification_metadata",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "verified_at",
+          "type": "timestamptz",
+          "nullable": true
+        },
+        {
+          "name": "rejected_at",
+          "type": "timestamptz",
+          "nullable": true
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamptz",
+          "nullable": true
+        },
+        {
+          "name": "document_delete_after",
+          "type": "timestamptz",
+          "nullable": true
+        },
+        {
+          "name": "documents_deleted_at",
+          "type": "timestamptz",
+          "nullable": true
+        },
+        {
+          "name": "is_synthetic",
+          "type": "bool",
+          "nullable": false
+        },
+        {
+          "name": "consent_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "request_key",
+          "type": "uuid",
+          "nullable": true
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "id",
+          "municipality_id"
+        ],
+        [
+          "provider",
+          "provider_reference"
+        ]
+      ],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "user_id",
+            "municipality_id"
+          ],
+          "target": "public.profiles",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        },
+        {
+          "columns": [
+            "consent_id"
+          ],
+          "target": "public.consents",
+          "references": [
+            "id"
+          ]
+        }
+      ]
+    },
+    "public.reports": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "folio",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "citizen_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "category_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "subcategory_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "priority_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "status_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "zone_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "location",
+          "type": "extensions.geography",
+          "nullable": true
+        },
+        {
+          "name": "approximate_address",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "gps_accuracy",
+          "type": "numeric",
+          "nullable": true
+        },
+        {
+          "name": "captured_at",
+          "type": "timestamptz",
+          "nullable": true
+        },
+        {
+          "name": "additional_data",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "form_schema_snapshot",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "idempotency_key",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "resolved_at",
+          "type": "timestamptz",
+          "nullable": true
+        },
+        {
+          "name": "closed_at",
+          "type": "timestamptz",
+          "nullable": true
+        },
+        {
+          "name": "is_pilot",
+          "type": "bool",
+          "nullable": false
+        },
+        {
+          "name": "admin_version",
+          "type": "int8",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "folio"
+        ],
+        [
+          "citizen_id",
+          "idempotency_key"
+        ],
+        [
+          "id",
+          "municipality_id"
+        ]
+      ],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "status_id"
+          ],
+          "target": "public.report_statuses",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "citizen_id",
+            "municipality_id"
+          ],
+          "target": "public.profiles",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        },
+        {
+          "columns": [
+            "category_id",
+            "municipality_id"
+          ],
+          "target": "public.categories",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        },
+        {
+          "columns": [
+            "subcategory_id",
+            "category_id",
+            "municipality_id"
+          ],
+          "target": "public.subcategories",
+          "references": [
+            "id",
+            "category_id",
+            "municipality_id"
+          ]
+        },
+        {
+          "columns": [
+            "priority_id",
+            "municipality_id"
+          ],
+          "target": "public.priorities",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        },
+        {
+          "columns": [
+            "zone_id",
+            "municipality_id"
+          ],
+          "target": "public.zones",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        }
+      ]
+    },
+    "public.report_images": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "report_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "storage_path",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "mime_type",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "size",
+          "type": "int8",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "storage_path"
+        ]
+      ],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "report_id",
+            "municipality_id"
+          ],
+          "target": "public.reports",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        }
+      ]
+    },
+    "public.report_status_history": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "report_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "previous_status_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "new_status_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "changed_by",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "comment",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "previous_status_id"
+          ],
+          "target": "public.report_statuses",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "new_status_id"
+          ],
+          "target": "public.report_statuses",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "changed_by"
+          ],
+          "target": "public.profiles",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "report_id",
+            "municipality_id"
+          ],
+          "target": "public.reports",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        }
+      ]
+    },
+    "public.report_assignments": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "report_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "department_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "assigned_to",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "assigned_by",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "assigned_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "unassigned_at",
+          "type": "timestamptz",
+          "nullable": true
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "assigned_by"
+          ],
+          "target": "public.profiles",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "report_id",
+            "municipality_id"
+          ],
+          "target": "public.reports",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        },
+        {
+          "columns": [
+            "department_id",
+            "municipality_id"
+          ],
+          "target": "public.departments",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        },
+        {
+          "columns": [
+            "assigned_to",
+            "municipality_id"
+          ],
+          "target": "public.profiles",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        }
+      ]
+    },
+    "public.report_comments": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "report_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "author_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "body",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "is_internal",
+          "type": "bool",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "author_id"
+          ],
+          "target": "public.profiles",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "report_id",
+            "municipality_id"
+          ],
+          "target": "public.reports",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        }
+      ]
+    },
+    "public.notifications": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "report_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "body",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "read_at",
+          "type": "timestamptz",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "user_id",
+            "municipality_id"
+          ],
+          "target": "public.profiles",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        },
+        {
+          "columns": [
+            "report_id",
+            "municipality_id"
+          ],
+          "target": "public.reports",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        }
+      ]
+    },
+    "public.audit_logs": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "actor_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "action",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "entity_type",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "entity_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "old_values",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "new_values",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "actor_id"
+          ],
+          "target": "public.profiles",
+          "references": [
+            "id"
+          ]
+        }
+      ]
+    },
+    "public.sla_rules": {
+      "source": "20260919000826_phase1_schema.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "category_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "priority_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "response_minutes",
+          "type": "int4",
+          "nullable": false
+        },
+        {
+          "name": "resolution_minutes",
+          "type": "int4",
+          "nullable": false
+        },
+        {
+          "name": "is_active",
+          "type": "bool",
+          "nullable": false
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "municipality_id",
+          "category_id",
+          "priority_id"
+        ]
+      ],
+      "foreign": [
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "category_id",
+            "municipality_id"
+          ],
+          "target": "public.categories",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        },
+        {
+          "columns": [
+            "priority_id",
+            "municipality_id"
+          ],
+          "target": "public.priorities",
+          "references": [
+            "id",
+            "municipality_id"
+          ]
+        }
+      ]
+    },
+    "private.identity_documents": {
+      "source": "20260924170343_phase3_synthetic_identity.sql",
+      "columns": [
+        {
+          "name": "verification_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "side",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "storage_path",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "uploaded_at",
+          "type": "timestamptz",
+          "nullable": true
+        },
+        {
+          "name": "deleted_at",
+          "type": "timestamptz",
+          "nullable": true
+        }
+      ],
+      "primary": [
+        "verification_id",
+        "side"
+      ],
+      "unique": [
+        [
+          "storage_path"
+        ]
+      ],
+      "foreign": [
+        {
+          "columns": [
+            "verification_id"
+          ],
+          "target": "public.identity_verifications",
+          "references": [
+            "id"
+          ]
+        }
+      ]
+    },
+    "private.report_uploads": {
+      "source": "20260925174611_phase4_pilot_reports.sql",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "actor",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "municipality_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "request_key",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "payload",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "committed_at",
+          "type": "timestamptz",
+          "nullable": true
+        },
+        {
+          "name": "purged_at",
+          "type": "timestamptz",
+          "nullable": true
+        }
+      ],
+      "primary": [
+        "id"
+      ],
+      "unique": [
+        [
+          "actor",
+          "request_key"
+        ]
+      ],
+      "foreign": [
+        {
+          "columns": [
+            "actor"
+          ],
+          "target": "public.profiles",
+          "references": [
+            "id"
+          ]
+        },
+        {
+          "columns": [
+            "municipality_id"
+          ],
+          "target": "public.municipalities",
+          "references": [
+            "id"
+          ]
+        }
+      ]
+    }
+  }
+}

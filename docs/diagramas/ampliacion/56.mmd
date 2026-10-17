@@ -1,0 +1,21 @@
+classDiagram
+class IdentityRepository {
+<<interface>>
++context()
++begin(requestKey)
++upload(caseId,side)
++submit(caseId)
+}
+class SupabaseIdentityRepository {
++call(body)
+}
+class IdentityScreen {
++IdentityRepository repository
+}
+class IdentityScreenState {
++run(action)
+}
+IdentityRepository <|.. SupabaseIdentityRepository
+IdentityScreen --> IdentityRepository
+IdentityScreen *-- IdentityScreenState
+IdentityScreenState ..> IdentityRepository

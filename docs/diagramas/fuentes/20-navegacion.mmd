@@ -1,0 +1,21 @@
+flowchart LR
+ W[Bienvenida] --> L[Iniciar sesión]
+ W --> R[Registro]
+ R --> C[Confirmar correo]
+ C --> P[Completar perfil]
+ L --> H[Inicio]
+ P --> H
+ L --> Reset[Recuperar contraseña]
+ H --> Reports[Mis reportes]
+ H --> Create[Crear reporte]
+ H --> Map[Mapa propio]
+ H --> Profile[Perfil]
+ H --> N[Notificaciones]
+ Create --> Type[Tipo] --> Location[Ubicación] --> Details[Detalles] --> Confirm[Confirmación]
+ Confirm --> Reports
+ Reports --> Detail[Detalle de reporte]
+ N --> Detail
+ Map --> Preview[Tarjeta: foto, folio, estado y descripción]
+ Profile --> Identity[Pruebas sintéticas de identidad]
+ Drawer[Menú lateral opcional] --> H
+ Bottom[Menú inferior] --> H

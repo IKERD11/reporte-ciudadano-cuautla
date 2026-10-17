@@ -1,0 +1,16 @@
+stateDiagram-v2
+ [*] --> loading
+ loading --> signedOut: sin cuenta
+ loading --> confirmation: correo no confirmado
+ loading --> profileSetup: falta perfil
+ loading --> ready: perfil válido
+ loading --> recovery: señal de recuperación
+ loading --> unavailable: error al cargar
+ signedOut --> confirmation: registro pendiente
+ signedOut --> loading: iniciar sesión
+ confirmation --> loading: sesión confirmada
+ profileSetup --> ready: completar perfil
+ ready --> signedOut: cerrar sesión
+ ready --> loading: cambio de sesión
+ recovery --> signedOut: guardar contraseña y cerrar sesión
+ unavailable --> loading: reintentar

@@ -1,0 +1,11 @@
+erDiagram
+  public_report_assignments {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid report_id FK "required"
+    uuid department_id FK "required"
+    uuid assigned_to FK "nullable"
+    uuid assigned_by FK "nullable"
+    timestamptz assigned_at "required"
+    timestamptz unassigned_at "nullable"
+  }

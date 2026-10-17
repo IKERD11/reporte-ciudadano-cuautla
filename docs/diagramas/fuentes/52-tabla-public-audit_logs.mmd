@@ -1,0 +1,13 @@
+erDiagram
+  public_audit_logs {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid actor_id FK "nullable"
+    text action "required"
+    text entity_type "required"
+    uuid entity_id "nullable"
+    jsonb old_values "required"
+    jsonb new_values "required"
+    jsonb metadata "required"
+    timestamptz created_at "required"
+  }

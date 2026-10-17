@@ -1,0 +1,18 @@
+flowchart TB
+L[Login] --> V{Sesión y acceso válido}
+V -->|No| L
+V -->|Sí| H[Resumen]
+H --> R[Reportes y filtros]
+H --> M[Mapa: página actual]
+H --> G[Métricas]
+H --> T[Equipos: consulta]
+H --> C[Configuración]
+R --> D[Detalle]
+M --> D
+D --> P[Prioridad / estado / asignación]
+P --> A{Permiso y versión vigentes}
+A -->|Sí| S[Guardar y recargar]
+A -->|No| E[Error / recargar sesión o reporte]
+C --> DEP[Crear departamento autorizado]
+H --> OUT[Cerrar sesión]
+OUT --> L

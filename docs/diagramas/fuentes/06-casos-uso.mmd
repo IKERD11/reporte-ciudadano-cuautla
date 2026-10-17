@@ -1,0 +1,17 @@
+flowchart LR
+ C[Ciudadano] --> UC1([Registrarse y confirmar correo])
+ C --> UC2([Crear reporte de prueba])
+ C --> UC3([Consultar reportes y mapa propios])
+ C --> UC4([Leer notificaciones propias])
+ C --> UC5([Enviar muestras de identidad sintética])
+ A[Administrador municipal] --> UA1([Consultar reportes municipales])
+ A --> UA2([Asignar departamento o responsable])
+ A --> UA3([Actualizar prioridad y estado])
+ A --> UA4([Consultar métricas y equipos])
+ A --> UA5([Crear departamento con permiso])
+ O[Operador / supervisor] --> UO([Atender reportes dentro de su alcance])
+ V[Viewer] --> UV([Consulta sin escritura])
+ R[Revisor con identity.read y identity.review] --> UR([Revisar muestra sintética])
+ UC2 -. requiere .-> AU([Sesión válida y permiso])
+ UA2 -. requiere .-> AU
+ UO -. requiere .-> AU

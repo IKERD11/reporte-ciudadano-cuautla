@@ -1,0 +1,10 @@
+flowchart LR
+ C[Ciudadano] --> F[App Flutter]
+ A[Personal autorizado] --> N[Panel Next.js]
+ F --> S[Supabase: Auth, PostgreSQL y Storage]
+ N --> S
+ F --> L[Ubicación del dispositivo: permiso explícito]
+ F --> M[OpenStreetMap: teselas]
+ N --> M
+ S --> C
+ P[INE real, push y publicación: pendientes] -. fuera del piloto .-> S

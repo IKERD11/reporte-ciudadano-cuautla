@@ -1,0 +1,24 @@
+classDiagram
+class CitizenProfile {
++String id
++String municipalityId
++String firstName
++String lastName
++String identityStatus
++String phone
++fromJson(json)
+}
+class AuthController {
++CitizenProfile profile
++edit(first,last,phone)
+}
+class AuthRepository {
+<<interface>>
++loadProfile()
++updateProfile(first,last,phone)
+}
+class SupabaseAuthRepository
+AuthController --> CitizenProfile
+AuthController --> AuthRepository
+AuthRepository <|.. SupabaseAuthRepository
+AuthRepository ..> CitizenProfile : devuelve

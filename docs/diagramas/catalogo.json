@@ -1,0 +1,387 @@
+[
+  {
+    "slug": "01-contexto",
+    "title": "Contexto del sistema",
+    "kind": "Arquitectura",
+    "note": "Vista del piloto implementado; no representa operación municipal real.",
+    "source": "apps/mobile/lib; apps/admin/src; supabase/functions"
+  },
+  {
+    "slug": "02-contenedores",
+    "title": "Contenedores y canales reales",
+    "kind": "Arquitectura",
+    "note": "Las notificaciones son RPC y triggers; no hay FCM ni suscripción Realtime implementada en este flujo.",
+    "source": "report_repository.dart; api.ts; supabase/functions"
+  },
+  {
+    "slug": "03-componentes-flutter",
+    "title": "Componentes de la app ciudadana",
+    "kind": "Componentes",
+    "note": "Nombres de clases y dependencias presentes en el código.",
+    "source": "apps/mobile/lib"
+  },
+  {
+    "slug": "04-componentes-admin",
+    "title": "Componentes del panel",
+    "kind": "Componentes",
+    "note": "Arquitectura de módulos; los componentes React no son clases de dominio.",
+    "source": "apps/admin/src/app; apps/admin/src/lib/api.ts"
+  },
+  {
+    "slug": "05-despliegue",
+    "title": "Despliegue actual y distribución",
+    "kind": "Despliegue",
+    "note": "Despliegue local documentado; no se afirma que los servidores estén activos ni se dibuja hosting público inexistente.",
+    "source": "scripts/serve-mobile.mjs; CONTRIBUTING.md; docs/fase-5-administracion.md"
+  },
+  {
+    "slug": "06-casos-uso",
+    "title": "Casos de uso y actores",
+    "kind": "UML conceptual",
+    "note": "Notación de casos de uso aproximada con nodos Mermaid. Las facultades concretas dependen del permiso, municipio y estado.",
+    "source": "auth_repository.dart; admin_pilot migration; report_pilot migration"
+  },
+  {
+    "slug": "07-clases-autenticacion",
+    "title": "Clases de autenticación Flutter",
+    "kind": "UML clases",
+    "note": "Firmas resumidas; atributos y dependencias reales.",
+    "source": "apps/mobile/lib/features/auth/domain/auth_repository.dart; application/auth_controller.dart"
+  },
+  {
+    "slug": "08-clases-reportes",
+    "title": "Clases del módulo de reportes",
+    "kind": "UML clases",
+    "note": "Los reportes se transportan como Map JSON; no se inventa una clase Report en Flutter.",
+    "source": "apps/mobile/lib/features/reports"
+  },
+  {
+    "slug": "09-estados-sesion",
+    "title": "Estados de sesión",
+    "kind": "UML estados",
+    "note": "Representación del AuthController; loading también se usa al aceptar cambios de sesión.",
+    "source": "apps/mobile/lib/features/auth/application/auth_controller.dart"
+  },
+  {
+    "slug": "10-secuencia-registro",
+    "title": "Registro y perfil",
+    "kind": "UML secuencia",
+    "note": "No se conceden roles administrativos desde metadatos del registro.",
+    "source": "auth_controller.dart; supabase_auth_repository.dart; phase2_auth_profiles.sql"
+  },
+  {
+    "slug": "11-actividad-crear",
+    "title": "Actividad: crear reporte",
+    "kind": "UML actividad",
+    "note": "Dirección de diez caracteres o punto geográfico cuando la categoría exige ubicación; máximo tres fotos en el piloto.",
+    "source": "report_wizard.dart; report_address_location.sql"
+  },
+  {
+    "slug": "12-secuencia-envio",
+    "title": "Envío de reporte y evidencia",
+    "kind": "UML secuencia",
+    "note": "Reserva y commit son transacciones separadas; Storage no comparte transacción SQL. La reserva permite reintentos y purga de cargas incompletas.",
+    "source": "supabase/functions/report-pilot/index.ts; phase4_report_list_alias.sql"
+  },
+  {
+    "slug": "13-estados-reporte",
+    "title": "Máquina de estados del reporte",
+    "kind": "UML estados",
+    "note": "Transiciones reales de admin_pilot; VALIDADO avanza mediante asignación, no mediante el selector de estado.",
+    "source": "20260926004537_phase5_admin_pilot.sql; apps/admin/src/lib/api.ts"
+  },
+  {
+    "slug": "14-secuencia-admin",
+    "title": "Actualización administrativa y concurrencia",
+    "kind": "UML secuencia",
+    "note": "El backend compara admin_version y bloquea cambios sobre estados terminales.",
+    "source": "20260926004537_phase5_admin_pilot.sql"
+  },
+  {
+    "slug": "15-secuencia-notificaciones",
+    "title": "Notificaciones internas",
+    "kind": "UML secuencia",
+    "note": "No existe envío push; la bandeja se actualiza mediante RPC. La prioridad por sí sola no genera aviso.",
+    "source": "phase6_notifications.sql; notifications_screen.dart; citizen_home.dart"
+  },
+  {
+    "slug": "16-secuencia-foto",
+    "title": "Acceso privado a fotografías",
+    "kind": "UML secuencia",
+    "note": "Flujo ciudadano. El panel también solicita acceso firmado, por su propia ruta autorizada.",
+    "source": "report-pilot/index.ts; reports_screen.dart"
+  },
+  {
+    "slug": "17-identidad-sintetica",
+    "title": "Estados de identidad sintética",
+    "kind": "UML estados",
+    "note": "Aprobar la simulación NO marca VERIFIED al perfil. VERIFIED y EXPIRED existen en el enum, pero no son resultados de este piloto.",
+    "source": "20260924170343_phase3_synthetic_identity.sql"
+  },
+  {
+    "slug": "18-purga",
+    "title": "Purga programada de archivos",
+    "kind": "Actividad / mantenimiento",
+    "note": "La migración programa cada 15 minutos; no se consultó el estado actual del cron remoto. No borra automáticamente evidencia de reportes confirmados.",
+    "source": "identity-purge/index.ts; phase3_purge_schedule.sql; phase4_pilot_reports.sql"
+  },
+  {
+    "slug": "19-autorizacion",
+    "title": "Decisión de autorización",
+    "kind": "Seguridad / flujo",
+    "note": "Diagrama conceptual de controles combinados; cada RPC realiza los controles específicos de su operación.",
+    "source": "phase1_security.sql; phase4_pilot_reports.sql; phase5_admin_pilot.sql; phase6_notifications.sql"
+  },
+  {
+    "slug": "20-navegacion",
+    "title": "Navegación ciudadana",
+    "kind": "Mapa de pantallas",
+    "note": "Vista funcional; no representa cada control ni cada ruta técnica.",
+    "source": "auth_screen.dart; citizen_home.dart; reports_screen.dart"
+  },
+  {
+    "slug": "21-ubicacion",
+    "title": "Selección de ubicación",
+    "kind": "Actividad",
+    "note": "GPS real pendiente de validar en el navegador del usuario. Una dirección escrita no se geocodifica automáticamente.",
+    "source": "report_wizard.dart; report_map.dart; report_address_location.sql"
+  },
+  {
+    "slug": "22-flujo-datos",
+    "title": "Flujo de datos de nivel 1",
+    "kind": "DFD conceptual",
+    "note": "No es una topología de red; separa procesos y almacenes. Las flechas no conceden acceso directo a tablas.",
+    "source": "supabase/functions; supabase/migrations"
+  },
+  {
+    "slug": "23-limites-confianza",
+    "title": "Límites de confianza",
+    "kind": "Seguridad / arquitectura",
+    "note": "No contiene secretos. RLS y validaciones de funciones cumplen papeles distintos; service_role exige comprobaciones explícitas de servidor.",
+    "source": "supabase/functions; docs/seguridad.md"
+  },
+  {
+    "slug": "24-colaboracion",
+    "title": "Colaboración y validación",
+    "kind": "Proceso de desarrollo",
+    "note": "Flujo recomendado para colaboradores; CI es una plantilla manual, no una automatización activa.",
+    "source": "CONTRIBUTING.md; docs/ci/database-workflow.yml"
+  },
+  {
+    "slug": "25-er-general",
+    "title": "Modelo entidad-relación general",
+    "kind": "Base de datos",
+    "note": "Vista de claves. Relaciones físicas FK; no dibuja como FK las rutas de Storage ni IDs polimórficos. Las FK compuestas se muestran como una sola relación.",
+    "source": "Todas las migraciones; schema.json"
+  },
+  {
+    "slug": "26-er-acceso",
+    "title": "Identidad de usuario y permisos",
+    "kind": "Base de datos",
+    "note": "Columnas completas de las tablas seleccionadas. PK/FK son participaciones de columnas en claves; ver schema.json para claves compuestas y diccionario para restricciones.",
+    "source": "Todas las migraciones; schema.json"
+  },
+  {
+    "slug": "27-er-catalogos",
+    "title": "Catálogos y configuración",
+    "kind": "Base de datos",
+    "note": "Columnas completas de las tablas seleccionadas. PK/FK son participaciones de columnas en claves; ver schema.json para claves compuestas y diccionario para restricciones.",
+    "source": "Todas las migraciones; schema.json"
+  },
+  {
+    "slug": "28-er-reportes",
+    "title": "Reportes y seguimiento",
+    "kind": "Base de datos",
+    "note": "Columnas completas de las tablas seleccionadas. PK/FK son participaciones de columnas en claves; ver schema.json para claves compuestas y diccionario para restricciones.",
+    "source": "Todas las migraciones; schema.json"
+  },
+  {
+    "slug": "29-er-identidad",
+    "title": "Verificación sintética y consentimiento",
+    "kind": "Base de datos",
+    "note": "Columnas completas de las tablas seleccionadas. PK/FK son participaciones de columnas en claves; ver schema.json para claves compuestas y diccionario para restricciones.",
+    "source": "Todas las migraciones; schema.json"
+  },
+  {
+    "slug": "30-er-avisos",
+    "title": "Avisos, auditoría y reservas",
+    "kind": "Base de datos",
+    "note": "Columnas completas de las tablas seleccionadas. PK/FK son participaciones de columnas en claves; ver schema.json para claves compuestas y diccionario para restricciones.",
+    "source": "Todas las migraciones; schema.json"
+  },
+  {
+    "slug": "31-tabla-public-municipalities",
+    "title": "public.municipalities",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "32-tabla-public-profiles",
+    "title": "public.profiles",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "33-tabla-public-roles",
+    "title": "public.roles",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "34-tabla-public-permissions",
+    "title": "public.permissions",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "35-tabla-public-role_permissions",
+    "title": "public.role_permissions",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "36-tabla-public-user_roles",
+    "title": "public.user_roles",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "37-tabla-public-priorities",
+    "title": "public.priorities",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "38-tabla-public-report_statuses",
+    "title": "public.report_statuses",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "39-tabla-public-departments",
+    "title": "public.departments",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "40-tabla-public-zones",
+    "title": "public.zones",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "41-tabla-public-categories",
+    "title": "public.categories",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "42-tabla-public-subcategories",
+    "title": "public.subcategories",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "43-tabla-public-settings",
+    "title": "public.settings",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "44-tabla-public-consents",
+    "title": "public.consents",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "45-tabla-public-identity_verifications",
+    "title": "public.identity_verifications",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "46-tabla-public-reports",
+    "title": "public.reports",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "47-tabla-public-report_images",
+    "title": "public.report_images",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "48-tabla-public-report_status_history",
+    "title": "public.report_status_history",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "49-tabla-public-report_assignments",
+    "title": "public.report_assignments",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "50-tabla-public-report_comments",
+    "title": "public.report_comments",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "51-tabla-public-notifications",
+    "title": "public.notifications",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "52-tabla-public-audit_logs",
+    "title": "public.audit_logs",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "53-tabla-public-sla_rules",
+    "title": "public.sla_rules",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260919000826_phase1_schema.sql"
+  },
+  {
+    "slug": "54-tabla-private-identity_documents",
+    "title": "private.identity_documents",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260924170343_phase3_synthetic_identity.sql"
+  },
+  {
+    "slug": "55-tabla-private-report_uploads",
+    "title": "private.report_uploads",
+    "kind": "Tabla individual",
+    "note": "Ficha de columnas completa. Para relaciones, consultar los diagramas ER por área y el diccionario.",
+    "source": "supabase/migrations/20260925174611_phase4_pilot_reports.sql"
+  }
+]

@@ -1,0 +1,10 @@
+flowchart LR
+I([Inicio]) --> A[ref: registro y sesión]
+A --> R[ref: envío de reporte]
+R --> D[ref: revisión administrativa]
+D --> N[ref: notificación interna]
+N --> C[ref: consulta del detalle]
+C --> P{Hay evidencia}
+P -->|Sí| F[ref: URL privada de fotografía]
+P -->|No| FIN([Fin de consulta])
+F --> FIN

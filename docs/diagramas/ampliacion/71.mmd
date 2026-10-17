@@ -1,0 +1,10 @@
+flowchart LR
+subgraph M[Modulo de reportes]
+UI[Interfaz: ReportsScreen / ReportWizard] --> REP[Puerto de datos: ReportRepository]
+UI --> MAP[Puerto visual: ReportMap]
+UI --> PHOTO[Preparación de fotografía]
+REP --> IMP[SupabaseReportRepository]
+end
+IMP --> API[Edge report-pilot]
+MAP --> T[Teselas externas]
+PHOTO --> IMP

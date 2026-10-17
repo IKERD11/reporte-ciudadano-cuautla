@@ -1,0 +1,8 @@
+erDiagram
+  public_user_roles {
+    uuid id PK "required"
+    uuid user_id FK "required"
+    uuid municipality_id FK "nullable"
+    uuid role_id FK "required"
+    timestamptz created_at "required"
+  }

@@ -1,0 +1,10 @@
+flowchart LR
+C[Ciudadano] -->|1. Confirmar| F[ReportWizard]
+F -->|2. submit| R[ReportRepository]
+R -->|3. HTTPS autenticado| E[report-pilot]
+E -->|4. Reservar| D[(PostgreSQL)]
+E -->|5. Cargar evidencia| S[(Storage)]
+E -->|6. Confirmar transacción| D
+D -->|7. Folio| E
+E -->|8. Resultado| F
+F -->|9. Mostrar confirmación| C

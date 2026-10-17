@@ -1,0 +1,9 @@
+erDiagram
+  public_departments {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    text name "required"
+    bool is_active "required"
+    timestamptz created_at "required"
+    timestamptz updated_at "required"
+  }

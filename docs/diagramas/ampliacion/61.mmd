@@ -1,0 +1,22 @@
+flowchart LR
+subgraph Ciudadano
+C1[Capturar reporte de prueba] --> C2[Confirmar envío]
+C3[Consultar estado y aviso]
+end
+subgraph Sistema
+S1[Validar y guardar] --> S2[Generar folio]
+S3[Historial y notificación interna]
+end
+subgraph Administrador
+A1[Revisar] --> A2[Validar y asignar]
+end
+subgraph Personal_autorizado
+O1[En atención] --> O2[Resolver] --> O3[Cerrar]
+end
+C2 --> S1
+S2 --> A1
+A2 --> O1
+O1 --> S3
+O2 --> S3
+O3 --> S3
+S3 --> C3

@@ -1,0 +1,13 @@
+flowchart TD
+ A[Solicitud con JWT] --> B{Usuario y sesión válidos}
+ B -->|No| X[Denegar]
+ B -->|Sí| C{Perfil y municipio activos}
+ C -->|No| X
+ C -->|Sí| D{Permiso requerido}
+ D -->|No| X
+ D -->|Sí| E{Alcance autorizado}
+ E -->|Propietario / asignado / municipio o global autorizado| F{Datos y estado válidos}
+ E -->|Fuera de alcance| X
+ F -->|No| Y[Rechazar datos o conflicto]
+ F -->|Sí| G[Ejecutar operación]
+ G --> H[Historial / auditoría / notificación según acción]

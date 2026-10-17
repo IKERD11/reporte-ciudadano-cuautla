@@ -1,0 +1,13 @@
+sequenceDiagram
+actor A as Administrador A
+actor B as Administrador B
+participant D as Base de datos
+A->>D: Leer reporte versión n
+B->>D: Leer reporte versión n
+A->>D: Guardar con versión n
+D-->>A: Guardado / versión n+1
+B->>D: Guardar con versión n
+D-->>B: Conflicto 40001
+B->>D: Recargar detalle
+D-->>B: Estado vigente
+Note over B,D: Revisar antes de volver a guardar

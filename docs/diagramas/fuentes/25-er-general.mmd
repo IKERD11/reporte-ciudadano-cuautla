@@ -1,0 +1,189 @@
+erDiagram
+  auth_users {
+    uuid id PK
+  }
+  public_municipalities {
+    uuid id PK "required"
+  }
+  public_profiles {
+    uuid id PK, FK "required"
+    uuid municipality_id FK "required"
+  }
+  public_roles {
+    uuid id PK "required"
+    text code UK "required"
+  }
+  public_permissions {
+    uuid id PK "required"
+    text code UK "required"
+  }
+  public_role_permissions {
+    uuid role_id PK, FK "required"
+    uuid permission_id PK, FK "required"
+  }
+  public_user_roles {
+    uuid id PK "required"
+    uuid user_id FK "required"
+    uuid municipality_id FK "nullable"
+    uuid role_id FK "required"
+  }
+  public_priorities {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+  }
+  public_report_statuses {
+    uuid id PK "required"
+    text code UK "required"
+  }
+  public_departments {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+  }
+  public_zones {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+  }
+  public_categories {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid default_priority_id FK "required"
+  }
+  public_subcategories {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid category_id FK "required"
+  }
+  public_settings {
+    uuid municipality_id PK, FK "required"
+  }
+  public_consents {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid user_id FK "required"
+  }
+  public_identity_verifications {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid user_id FK "required"
+    uuid consent_id FK "nullable"
+  }
+  public_reports {
+    uuid id PK "required"
+    text folio UK "required"
+    uuid municipality_id FK "required"
+    uuid citizen_id FK "required"
+    uuid category_id FK "required"
+    uuid subcategory_id FK "nullable"
+    uuid priority_id FK "required"
+    uuid status_id FK "required"
+    uuid zone_id FK "nullable"
+  }
+  public_report_images {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid report_id FK "required"
+    text storage_path UK "required"
+  }
+  public_report_status_history {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid report_id FK "required"
+    uuid previous_status_id FK "nullable"
+    uuid new_status_id FK "required"
+    uuid changed_by FK "nullable"
+  }
+  public_report_assignments {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid report_id FK "required"
+    uuid department_id FK "required"
+    uuid assigned_to FK "nullable"
+    uuid assigned_by FK "nullable"
+  }
+  public_report_comments {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid report_id FK "required"
+    uuid author_id FK "nullable"
+  }
+  public_notifications {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid user_id FK "required"
+    uuid report_id FK "nullable"
+  }
+  public_audit_logs {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid actor_id FK "nullable"
+  }
+  public_sla_rules {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid category_id FK "nullable"
+    uuid priority_id FK "required"
+  }
+  private_identity_documents {
+    uuid verification_id PK, FK "required"
+    text side PK "required"
+    text storage_path UK "required"
+  }
+  private_report_uploads {
+    uuid id PK "required"
+    uuid actor FK "required"
+    uuid municipality_id FK "required"
+  }
+  auth_users ||--o| public_profiles : "id"
+  public_municipalities ||--o{ public_profiles : "municipality_id"
+  public_roles ||--o{ public_role_permissions : "role_id"
+  public_permissions ||--o{ public_role_permissions : "permission_id"
+  public_profiles ||--o{ public_user_roles : "user_id"
+  public_municipalities |o--o{ public_user_roles : "municipality_id"
+  public_roles ||--o{ public_user_roles : "role_id"
+  public_profiles |o--o{ public_user_roles : "user_id, municipality_id"
+  public_municipalities ||--o{ public_priorities : "municipality_id"
+  public_municipalities ||--o{ public_departments : "municipality_id"
+  public_municipalities ||--o{ public_zones : "municipality_id"
+  public_municipalities ||--o{ public_categories : "municipality_id"
+  public_priorities ||--o{ public_categories : "default_priority_id, municipality_id"
+  public_municipalities ||--o{ public_subcategories : "municipality_id"
+  public_categories ||--o{ public_subcategories : "category_id, municipality_id"
+  public_municipalities ||--o| public_settings : "municipality_id"
+  public_municipalities ||--o{ public_consents : "municipality_id"
+  public_profiles ||--o{ public_consents : "user_id, municipality_id"
+  public_municipalities ||--o{ public_identity_verifications : "municipality_id"
+  public_profiles ||--o{ public_identity_verifications : "user_id, municipality_id"
+  public_consents |o--o{ public_identity_verifications : "consent_id"
+  public_municipalities ||--o{ public_reports : "municipality_id"
+  public_report_statuses ||--o{ public_reports : "status_id"
+  public_profiles ||--o{ public_reports : "citizen_id, municipality_id"
+  public_categories ||--o{ public_reports : "category_id, municipality_id"
+  public_subcategories |o--o{ public_reports : "subcategory_id, category_id, municipality_id"
+  public_priorities ||--o{ public_reports : "priority_id, municipality_id"
+  public_zones |o--o{ public_reports : "zone_id, municipality_id"
+  public_municipalities ||--o{ public_report_images : "municipality_id"
+  public_reports ||--o{ public_report_images : "report_id, municipality_id"
+  public_municipalities ||--o{ public_report_status_history : "municipality_id"
+  public_report_statuses |o--o{ public_report_status_history : "previous_status_id"
+  public_report_statuses ||--o{ public_report_status_history : "new_status_id"
+  public_profiles |o--o{ public_report_status_history : "changed_by"
+  public_reports ||--o{ public_report_status_history : "report_id, municipality_id"
+  public_municipalities ||--o{ public_report_assignments : "municipality_id"
+  public_profiles |o--o{ public_report_assignments : "assigned_by"
+  public_reports ||--o{ public_report_assignments : "report_id, municipality_id"
+  public_departments ||--o{ public_report_assignments : "department_id, municipality_id"
+  public_profiles |o--o{ public_report_assignments : "assigned_to, municipality_id"
+  public_municipalities ||--o{ public_report_comments : "municipality_id"
+  public_profiles |o--o{ public_report_comments : "author_id"
+  public_reports ||--o{ public_report_comments : "report_id, municipality_id"
+  public_municipalities ||--o{ public_notifications : "municipality_id"
+  public_profiles ||--o{ public_notifications : "user_id, municipality_id"
+  public_reports |o--o{ public_notifications : "report_id, municipality_id"
+  public_municipalities ||--o{ public_audit_logs : "municipality_id"
+  public_profiles |o--o{ public_audit_logs : "actor_id"
+  public_municipalities ||--o{ public_sla_rules : "municipality_id"
+  public_categories |o--o{ public_sla_rules : "category_id, municipality_id"
+  public_priorities ||--o{ public_sla_rules : "priority_id, municipality_id"
+  public_identity_verifications ||--o{ private_identity_documents : "verification_id"
+  public_profiles ||--o{ private_report_uploads : "actor"
+  public_municipalities ||--o{ private_report_uploads : "municipality_id"

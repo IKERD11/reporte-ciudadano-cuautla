@@ -1,0 +1,29 @@
+flowchart TB
+ subgraph Clientes
+ F[Flutter]
+ N[Next.js / navegador]
+ end
+ subgraph Supabase
+ A[Auth]
+ E[Edge report-pilot]
+ I[Edge identity-pilot]
+ R[Data API / RPC]
+ D[(PostgreSQL + PostGIS)]
+ S[(Storage privado)]
+ P[Edge identity-purge]
+ end
+ F --> A
+ N --> A
+ F -->|JWT| E
+ F -->|JWT| I
+ F -->|citizen_notifications / perfil| R
+ N -->|admin_pilot| R
+ E -->|service RPC| D
+ I -->|service RPC| D
+ R --> D
+ E --> S
+ I --> S
+ N -->|URL firmada autorizada| S
+ F -->|URL firmada autorizada| S
+ P --> D
+ P --> S

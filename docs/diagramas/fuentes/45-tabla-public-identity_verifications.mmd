@@ -1,0 +1,21 @@
+erDiagram
+  public_identity_verifications {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid user_id FK "required"
+    text provider "nullable"
+    text provider_reference "nullable"
+    text document_type "required"
+    public_identity_status status "required"
+    jsonb verification_metadata "required"
+    timestamptz created_at "required"
+    timestamptz updated_at "required"
+    timestamptz verified_at "nullable"
+    timestamptz rejected_at "nullable"
+    timestamptz expires_at "nullable"
+    timestamptz document_delete_after "nullable"
+    timestamptz documents_deleted_at "nullable"
+    bool is_synthetic "required"
+    uuid consent_id FK "nullable"
+    uuid request_key "nullable"
+  }

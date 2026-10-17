@@ -1,0 +1,54 @@
+erDiagram
+  auth_users {
+    uuid id PK
+  }
+  public_municipalities {
+    uuid id PK "required"
+    text name "required"
+    text state "required"
+    text logo_url "nullable"
+    bool is_active "required"
+    timestamptz created_at "required"
+    timestamptz updated_at "required"
+  }
+  public_profiles {
+    uuid id PK, FK "required"
+    uuid municipality_id FK "required"
+    text first_name "required"
+    text last_name "required"
+    text phone "nullable"
+    public_identity_status identity_status "required"
+    bool is_active "required"
+    timestamptz created_at "required"
+    timestamptz updated_at "required"
+    timestamptz deleted_at "nullable"
+  }
+  public_roles {
+    uuid id PK "required"
+    text code UK "required"
+    text description "required"
+  }
+  public_permissions {
+    uuid id PK "required"
+    text code UK "required"
+    text description "required"
+  }
+  public_role_permissions {
+    uuid role_id PK, FK "required"
+    uuid permission_id PK, FK "required"
+  }
+  public_user_roles {
+    uuid id PK "required"
+    uuid user_id FK "required"
+    uuid municipality_id FK "nullable"
+    uuid role_id FK "required"
+    timestamptz created_at "required"
+  }
+  auth_users ||--o| public_profiles : "id"
+  public_municipalities ||--o{ public_profiles : "municipality_id"
+  public_roles ||--o{ public_role_permissions : "role_id"
+  public_permissions ||--o{ public_role_permissions : "permission_id"
+  public_profiles ||--o{ public_user_roles : "user_id"
+  public_municipalities |o--o{ public_user_roles : "municipality_id"
+  public_roles ||--o{ public_user_roles : "role_id"
+  public_profiles |o--o{ public_user_roles : "user_id, municipality_id"

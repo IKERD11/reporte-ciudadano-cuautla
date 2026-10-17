@@ -1,0 +1,17 @@
+classDiagram
+class ElementoDocumentado
+class Implementado {
+<<stereotype>>
++referenciaCodigo
+}
+class Propuesto {
+<<stereotype>>
++requisitoPendiente
+}
+class Sintetico {
+<<stereotype>>
++sinDatosPersonales
+}
+ElementoDocumentado <|-- Implementado
+ElementoDocumentado <|-- Propuesto
+ElementoDocumentado <|-- Sintetico

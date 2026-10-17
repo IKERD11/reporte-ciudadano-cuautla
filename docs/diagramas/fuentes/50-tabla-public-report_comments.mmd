@@ -1,0 +1,10 @@
+erDiagram
+  public_report_comments {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid report_id FK "required"
+    uuid author_id FK "nullable"
+    text body "required"
+    bool is_internal "required"
+    timestamptz created_at "required"
+  }

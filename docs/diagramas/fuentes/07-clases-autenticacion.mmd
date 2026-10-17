@@ -1,0 +1,53 @@
+classDiagram
+ class AuthRepository {
+ <<interface>>
+ +changes Stream~AuthSignal~
+ +validateSession()
+ +signUp(email,password)
+ +signIn(email,password)
+ +signOut()
+ +loadProfile()
+ +completeProfile(municipality,first,last)
+ +updateProfile(first,last,phone)
+ }
+ class SupabaseAuthRepository
+ class AuthController {
+ +stage AuthStage
+ +account Account
+ +profile CitizenProfile
+ +start()
+ +register(email,password)
+ +login(email,password)
+ +logout()
+ +complete(municipality,first,last)
+ +edit(first,last,phone)
+ }
+ class Account {
+ +String id
+ +String email
+ +bool confirmed
+ }
+ class CitizenProfile {
+ +String id
+ +String municipalityId
+ +String firstName
+ +String lastName
+ +String identityStatus
+ +String phone
+ }
+ class AuthSignal {
+ +Account account
+ +bool recovery
+ }
+ class Municipality {
+ +String id
+ +String name
+ +String state
+ }
+ AuthRepository <|.. SupabaseAuthRepository
+ AuthController --> AuthRepository
+ AuthController --> Account
+ AuthController --> CitizenProfile
+ AuthController --> Municipality
+ AuthRepository --> AuthSignal
+ AuthSignal --> Account

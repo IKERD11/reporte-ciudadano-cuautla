@@ -1,0 +1,11 @@
+stateDiagram-v2
+ [*] --> PENDING: consentimiento synthetic-v1
+ PENDING --> DOCUMENT_CAPTURED: ambos lados cargados
+ DOCUMENT_CAPTURED --> PROCESSING: submit
+ PROCESSING --> UNDER_REVIEW: sin OCR real
+ UNDER_REVIEW --> UNDER_REVIEW: approve_demo / simulation_approved
+ UNDER_REVIEW --> REJECTED: revisión rechazada
+ note right of UNDER_REVIEW
+   No verifica la identidad del perfil.
+   Solo muestras sintéticas permitidas.
+ end note

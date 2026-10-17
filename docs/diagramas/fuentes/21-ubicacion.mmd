@@ -1,0 +1,16 @@
+flowchart TD
+ A[Entrar a ubicación] --> B[Mapa visible centrado en Cuautla sin punto enviado]
+ B --> C{Elección del ciudadano}
+ C -->|Dirección| D[Guardar texto de dirección]
+ C -->|Tocar mapa| E[Seleccionar punto]
+ C -->|Usar ubicación| F[Solicitar ubicación con precisión media]
+ F --> G{Respuesta antes de 20 segundos}
+ G -->|Sí| E
+ G -->|No o permiso denegado| H[Mostrar error sin bloquear formulario]
+ H --> C
+ E --> I[Mostrar marcador y precisión si proviene de GPS]
+ I --> J[Verificar o ajustar punto]
+ D --> K{Requisito de ubicación satisfecho}
+ J --> K
+ K -->|Punto o dirección de al menos 10 caracteres| L[Continuar]
+ K -->|No| C

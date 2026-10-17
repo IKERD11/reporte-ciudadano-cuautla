@@ -1,0 +1,11 @@
+flowchart LR
+I[Responsable autorizado] --> S[Inventariar esquema, datos y archivos]
+S --> DB[Exportar datos y esquema]
+S --> ST[Copiar evidencias autorizadas]
+DB --> ENC[Cifrar y restringir acceso]
+ST --> ENC
+ENC --> V[Verificar integridad y fecha]
+V --> R[Restaurar en entorno aislado]
+R --> C[Comprobar cuentas, RLS y archivos]
+C --> T[Prueba funcional]
+T --> OK[Registrar resultado y retención]

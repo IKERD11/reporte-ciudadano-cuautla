@@ -1,0 +1,15 @@
+flowchart TD
+ A([Inicio]) --> B[Seleccionar categoría]
+ B --> C[Escribir dirección / GPS / tocar mapa]
+ C --> D{Ubicación requerida satisfecha}
+ D -->|No| C
+ D -->|Sí| E[Descripción, campos dinámicos y fotos]
+ E --> F{Datos y evidencia válidos}
+ F -->|No| E
+ F -->|Sí| G[Revisar y aceptar reporte de prueba]
+ G --> H[Enviar con clave idempotente]
+ H --> I{Servidor acepta}
+ I -->|No| J[Mostrar error / reintentar sin cambiar datos]
+ J --> H
+ I -->|Sí| K[Folio y detalle]
+ K --> L([Fin])

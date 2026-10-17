@@ -1,0 +1,9 @@
+erDiagram
+  public_subcategories {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid category_id FK "required"
+    text name "required"
+    bool is_active "required"
+    int4 sort_order "required"
+  }

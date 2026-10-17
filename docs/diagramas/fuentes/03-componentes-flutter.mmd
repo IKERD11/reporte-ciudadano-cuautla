@@ -1,0 +1,19 @@
+flowchart TB
+ Main[main.dart] --> AuthController
+ Main --> AuthScreen
+ AuthScreen --> WelcomeScreen
+ AuthScreen --> CitizenHome
+ AuthController --> AuthRepository
+ AuthRepository --> SupabaseAuthRepository
+ CitizenHome --> ReportsScreen
+ CitizenHome --> NotificationsScreen
+ CitizenHome --> IdentityScreen[Identidad sintética desde perfil]
+ ReportsScreen --> ReportWizard
+ ReportWizard --> ReportMap
+ ReportsScreen --> PrivateReportImage
+ CitizenHome --> PrivateReportImage
+ ReportsScreen --> ReportRepository
+ NotificationsScreen --> ReportRepository
+ ReportWizard --> ReportRepository
+ ReportRepository --> SupabaseReportRepository
+ IdentityScreen --> IdentityRepository

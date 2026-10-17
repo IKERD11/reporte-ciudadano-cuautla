@@ -1,0 +1,14 @@
+flowchart LR
+ R[Repositorio privado main] --> B[Crear rama]
+ B --> C[Configurar entorno local con plantillas]
+ C --> D[Desarrollar cambio]
+ D --> F[Flutter analyze y test]
+ D --> N[Typecheck y build del panel]
+ D --> S[SQL syntax y pgTAP local]
+ F --> PR[Pull request]
+ N --> PR
+ S --> PR
+ PR --> Review[Revisión por colaboradores]
+ Review --> Merge[Integración autorizada]
+ Merge --> R
+ CI[Plantilla CI manual / no activa] -. opcional con permisos y cuota .-> Review

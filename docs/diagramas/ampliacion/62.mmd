@@ -1,0 +1,21 @@
+flowchart TB
+subgraph Flutter
+P[presentation] --> AC[auth/application]
+AC --> AD[auth/domain]
+AI[auth/data] --> AD
+RP[features/reports] --> SDK[supabase_flutter]
+ID[features/identity] --> SDK
+NT[features/notifications] --> RP
+P --> CORE[core: tema y configuración]
+end
+subgraph Nextjs
+APP[src/app] --> LIB[src/lib]
+LIB --> JS[supabase-js]
+end
+subgraph Backend
+EF[functions] --> SQL[migrations / PostgreSQL]
+TEST[tests/database] -. verifica .-> SQL
+end
+SDK --> EF
+JS --> SQL
+SQL -. generación .-> TYPES[packages/shared: tipos]

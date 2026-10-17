@@ -1,0 +1,16 @@
+sequenceDiagram
+ participant B as Operación de reporte
+ participant T as Trigger PostgreSQL
+ participant N as notifications
+ participant F as Flutter
+ participant R as citizen_notifications
+ B->>T: Inserción / cambio de estado / asignación
+ T->>T: Solo piloto, evitar doble aviso inicial de asignación
+ T->>N: Insertar aviso al ciudadano propietario
+ F->>R: count o list con JWT
+ R->>R: Validar sesión, perfil y municipio
+ R->>N: Consultar solo destinatario actual
+ N-->>F: Contador y hasta 20 avisos
+ F->>R: read(id)
+ R->>N: read_at = coalesce(read_at,now)
+ R-->>F: Confirmación idempotente

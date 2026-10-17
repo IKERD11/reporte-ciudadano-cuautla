@@ -1,0 +1,10 @@
+erDiagram
+  public_sla_rules {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid category_id FK "nullable"
+    uuid priority_id FK "required"
+    int4 response_minutes "required"
+    int4 resolution_minutes "required"
+    bool is_active "required"
+  }

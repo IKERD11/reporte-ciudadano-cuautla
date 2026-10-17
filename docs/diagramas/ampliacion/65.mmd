@@ -1,0 +1,11 @@
+flowchart TB
+U[Navegador ciudadano] -->|HTTPS| F[Hosting estático: Flutter web]
+A[Personal autorizado] -->|HTTPS| N[Hosting panel Next.js]
+F --> S[Supabase Auth / Data API / Edge]
+N --> S
+S --> D[(PostgreSQL)]
+S --> B[(Storage privado)]
+G[Repositorio privado] -. build y pruebas .-> F
+G -. build y pruebas .-> N
+R[Repositorio público de diagramas] --> P[GitHub Pages: atlas]
+CFG[Configurar redirecciones, CORS y cuotas gratis] -. requisito .-> S

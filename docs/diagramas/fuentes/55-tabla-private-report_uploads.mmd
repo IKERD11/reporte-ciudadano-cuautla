@@ -1,0 +1,12 @@
+erDiagram
+  private_report_uploads {
+    uuid id PK "required"
+    uuid actor FK "required"
+    uuid municipality_id FK "required"
+    uuid request_key "required"
+    jsonb payload "required"
+    timestamptz created_at "required"
+    timestamptz expires_at "required"
+    timestamptz committed_at "nullable"
+    timestamptz purged_at "nullable"
+  }

@@ -1,0 +1,20 @@
+sequenceDiagram
+ actor C as Ciudadano
+ participant UI as Flutter
+ participant A as Supabase Auth
+ participant DB as RPC de perfil
+ C->>UI: Correo y contraseña
+ UI->>A: signUp
+ A-->>C: Confirmación de correo
+ A-->>UI: Cuenta / sesión según confirmación
+ C->>A: Confirmar correo
+ UI->>A: Validar sesión
+ UI->>DB: Cargar perfil
+ alt Sin perfil
+ DB-->>UI: Municipios habilitados
+ C->>UI: Completar nombre y municipio
+ UI->>DB: RPC de alta de perfil
+ DB->>DB: Validar sesión y asignar CITIZEN
+ end
+ DB-->>UI: Perfil autorizado
+ UI-->>C: Inicio ciudadano

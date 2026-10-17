@@ -1,0 +1,11 @@
+erDiagram
+  public_report_status_history {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid report_id FK "required"
+    uuid previous_status_id FK "nullable"
+    uuid new_status_id FK "required"
+    uuid changed_by FK "nullable"
+    text comment "nullable"
+    timestamptz created_at "required"
+  }

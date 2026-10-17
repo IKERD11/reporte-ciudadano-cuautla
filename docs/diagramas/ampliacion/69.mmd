@@ -1,0 +1,13 @@
+sequenceDiagram
+participant C as Cliente
+participant A as API autorizada
+participant S as Storage privado
+C->>A: Solicitar evidencia
+A-->>C: URL firmada de 60 segundos
+Note over C,S: t0: empieza la vigencia
+C->>S: Abrir URL durante vigencia
+S-->>C: Imagen
+Note over C,S: t0 + 60 s: URL expirada
+C->>S: Reutilizar URL expirada
+S-->>C: Acceso rechazado
+C->>A: Solicitar nueva URL con sesión válida

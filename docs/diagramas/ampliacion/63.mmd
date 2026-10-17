@@ -1,0 +1,14 @@
+flowchart TB
+I[Crear reporte] --> G{GPS disponible}
+G -->|No| M[Marcar mapa o escribir dirección]
+G -->|Sí| P[Revisar marcador]
+M --> F[Completar formulario]
+P --> F
+F --> V{Datos válidos}
+V -->|No| F
+V -->|Sí| E[Enviar con clave estable]
+E --> X{Resultado}
+X -->|Sin conexión / tiempo agotado| RET[Mostrar error y ofrecer reintento]
+RET --> E
+X -->|Sesión inválida| LOGIN[Restablecer acceso antes de continuar]
+X -->|Correcto| OK[Folio confirmado]

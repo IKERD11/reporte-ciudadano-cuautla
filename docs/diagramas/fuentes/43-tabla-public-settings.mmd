@@ -1,0 +1,13 @@
+erDiagram
+  public_settings {
+    uuid municipality_id PK, FK "required"
+    int4 identity_retention_days "nullable"
+    int4 evidence_retention_days "nullable"
+    text privacy_notice_version "nullable"
+    text privacy_notice_url "nullable"
+    text emergency_contact "nullable"
+    int2 max_report_images "required"
+    timestamptz updated_at "required"
+    bool citizen_registration_enabled "required"
+    bool pilot_reports_enabled "required"
+  }

@@ -72,6 +72,9 @@ class _ReportWizardState extends State<ReportWizard> {
   int step = 0;
   bool busy = false, accepted = false, locating = false;
   int locationRequest = 0;
+  bool searching = false;
+  int searchRequest = 0;
+  List<Map<String, dynamic>> places = [];
   Map<String, dynamic>? frozen;
   @override
   void dispose() {
@@ -98,8 +101,11 @@ class _ReportWizardState extends State<ReportWizard> {
   }
 
   void selectPoint(LatLng p, {double? gps}) {
+    searchRequest++;
     locationRequest++;
     setState(() {
+      searching = false;
+      places = [];
       point = p;
       error = null;
       locating = false;
@@ -108,9 +114,57 @@ class _ReportWizardState extends State<ReportWizard> {
     });
   }
 
+  Future<void> searchAddress() async {
+    final query = address.text.trim();
+    if (query.length < 5 || query.length > 200) {
+      setState(
+        () => error =
+            'Escribe una dirección pública de 5 a 200 caracteres para buscar.',
+      );
+      return;
+    }
+    final current = ++searchRequest;
+    locationRequest++;
+    setState(() {
+      searching = true;
+      locating = false;
+      error = null;
+      places = [];
+    });
+    try {
+      final result = await widget.repository
+          .call('geocode', {'query': query})
+          .timeout(const Duration(seconds: 20));
+      if (!mounted || current != searchRequest) return;
+      setState(() {
+        places = (result['results'] as List)
+            .map((p) => Map<String, dynamic>.from(p as Map))
+            .toList();
+        if (places.isEmpty) {
+          error =
+              'No encontramos esa dirección. Añade la colonia o marca el lugar en el mapa.';
+        }
+      });
+    } catch (_) {
+      if (mounted && current == searchRequest) {
+        setState(
+          () => error =
+              'La búsqueda no está disponible ahora. Intenta más tarde o marca el lugar en el mapa.',
+        );
+      }
+    } finally {
+      if (mounted && current == searchRequest) {
+        setState(() => searching = false);
+      }
+    }
+  }
+
   Future<void> locate() async {
+    searchRequest++;
     final request = locationRequest + 1;
     setState(() {
+      searching = false;
+      places = [];
       locating = true;
       error = null;
     });
@@ -131,14 +185,20 @@ class _ReportWizardState extends State<ReportWizard> {
     final request = ++locationRequest;
     try {
       if (!kIsWeb) {
-        if (!await Geolocator.isLocationServiceEnabled()) {
+        if (!await Geolocator.isLocationServiceEnabled().timeout(
+          const Duration(seconds: 10),
+        )) {
           throw Exception(
             'Activa la ubicación del dispositivo o escribe la dirección.',
           );
         }
-        var permission = await Geolocator.checkPermission();
+        var permission = await Geolocator.checkPermission().timeout(
+          const Duration(seconds: 10),
+        );
         if (permission == LocationPermission.denied) {
-          permission = await Geolocator.requestPermission();
+          permission = await Geolocator.requestPermission().timeout(
+            const Duration(seconds: 60),
+          );
         }
         if (permission == LocationPermission.denied ||
             permission == LocationPermission.deniedForever) {
@@ -553,6 +613,11 @@ class _ReportWizardState extends State<ReportWizard> {
                     maxLines: 1,
                     style: const TextStyle(fontSize: 14),
                     keyboardType: TextInputType.streetAddress,
+                    onChanged: (_) => setState(() {
+                      searchRequest++;
+                      searching = false;
+                      places = [];
+                    }),
                     decoration: const InputDecoration(
                       labelText: 'Dirección del incidente',
                       hintText:
@@ -566,6 +631,47 @@ class _ReportWizardState extends State<ReportWizard> {
                       counterText: '',
                       labelStyle: TextStyle(fontSize: 14),
                     ),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: searching || locating ? null : searchAddress,
+                    icon: const Icon(Icons.search, size: 18),
+                    label: Text(
+                      searching
+                          ? 'Buscando dirección…'
+                          : 'Buscar dirección en el mapa',
+                    ),
+                  ),
+                  const Text(
+                    'Se enviará la dirección pública a OpenStreetMap. No incluyas nombres ni datos personales.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  for (final place in places)
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.place_outlined),
+                        title: Text(
+                          place['address'] as String,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: const Text(
+                          'Seleccionar y verificar en el mapa',
+                        ),
+                        onTap: () {
+                          address.text = place['address'] as String;
+                          selectPoint(
+                            LatLng(
+                              (place['latitude'] as num).toDouble(),
+                              (place['longitude'] as num).toDouble(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  const Text(
+                    'Búsqueda: © OpenStreetMap contributors · ODbL',
+                    style: TextStyle(fontSize: 11),
                   ),
                   if (point != null) ...[
                     const SizedBox(height: 12),

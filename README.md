@@ -1,6 +1,12 @@
 # Reporte Ciudadano
 
+## Diagramas del proyecto
+
+Consultar el [atlas técnico de 55 diagramas](docs/diagramas/README.md): arquitectura, UML de clases/secuencias/estados, casos de uso, actividades, navegación y modelo entidad-relación. Incluye 25 fichas de tablas, fuentes Mermaid, SVG y un visor HTML sin conexión. Basado en el código y las migraciones; distingue el piloto implementado de las funciones pendientes.
+
 **Colaboradores:** empezar por [CONTRIBUTING.md](CONTRIBUTING.md), con instalación, configuración, pruebas y reglas del piloto. Las notificaciones de fase 6 están documentadas en [fase 6](docs/fase-6-notificaciones.md).
+
+Estado actualizado: [cierre y pendientes comprobados, 15 de octubre](docs/cierre-piloto-2026-10-15.md).
 
 ## Qué falta desarrollar, corregir o retirar
 
@@ -9,16 +15,16 @@ El proyecto es un piloto en desarrollo, no una aplicación municipal terminada. 
 ### App ciudadana (Flutter)
 
 - **Corregir y comprobar la ubicación real:** el navegador integrado ha agotado el tiempo de espera. Se ajustó la solicitud y se probó con ubicaciones simuladas, pero falta validar permisos y captura real en navegadores y dispositivos. No dar este problema por resuelto solo porque pasan las pruebas.
-- **Completar la búsqueda por dirección si se necesita un marcador automático:** actualmente escribir una dirección guarda texto; el marcador se coloca con GPS o tocando el mapa. No hay geocodificación implementada.
+- **Búsqueda por dirección implementada:** botón explícito, candidatos seleccionables y marcador; caché y límites compartidos. Falta validación visual autenticada y de cobertura local.
 - **Revisar la interfaz en dispositivos reales:** tamaños de tarjetas, teclado, textos largos, accesibilidad, navegación inferior/lateral y tarjeta sobre el marcador con fotos reales del piloto. Los últimos ajustes tienen pruebas automatizadas, pero falta la validación manual completa.
 - **Probar Android/iOS:** instalación, permisos, cámara, galería, GPS, autenticación y recuperación de cuenta. La versión web es la más trabajada.
 - **Completar las notificaciones si el alcance lo requiere:** existen avisos internos; no hay notificaciones del sistema operativo con la app cerrada.
 
 ### Panel administrativo (Next.js)
 
-- **Completar la gestión avanzada de equipos, roles y permisos**, y las exportaciones previstas; no confundir consultas y asignaciones existentes con un módulo completo de administración de personal.
+- **Roles municipales y exportación implementados:** cuentas registradas del municipio, confirmación y auditoría, CSV filtrado hasta 5,000 registros. Roles personalizados e invitaciones por correo quedan fuera de esta implementación.
 - **Validar métricas y filtros** con conjuntos de prueba representativos: fechas, estados, reportes sin coordenadas, datos vacíos y cambios concurrentes.
-- **Corregir textos desactualizados:** la configuración todavía indica “Notificaciones automáticas: Pendientes · Fase 6”, aunque los avisos internos de esa fase ya están implementados.
+- **Corregido el 8 de octubre:** configuración distingue notificaciones internas disponibles de avisos con la app cerrada pendientes.
 - **Revisar diseño adaptable y controles** en pantallas pequeñas: calendarios, tablas, menús, gráficas y formularios.
 
 ### Backend, seguridad y entrega
@@ -31,11 +37,13 @@ El proyecto es un piloto en desarrollo, no una aplicación municipal terminada. 
 
 ### Qué eliminar o sustituir antes de una entrega real
 
-- **Retirar de la interfaz pública los accesos de demostración y ejemplos sintéticos**, o separarlos claramente en un entorno de demostración. El panel contiene un modo de diseño con datos ficticios.
+- **Corregido el 8 de octubre:** acceso a demostración limitado a desarrollo con `NEXT_PUBLIC_ENABLE_DEMO=true`; deshabilitado en compilaciones de producción. Se conservan fixtures de desarrollo.
 - **Sustituir textos provisionales y documentación desactualizada**, así como enlaces o controles que una revisión funcional identifique como incompletos. No eliminar funciones útiles sin comprobar primero su uso.
 - **Revisar capturas y recursos antiguos** en `docs/` y `assets/`; retirar solo los que no tengan referencias ni valor como documentación.
 - **No eliminar fixtures ni pruebas necesarias para desarrollo.** Mantenerlos fuera de los datos operativos. No retirar las etiquetas de piloto hasta que exista autorización para operar realmente.
 - **No subir secretos, sesiones, dependencias descargadas ni compilaciones** al repositorio. Se conservan plantillas y lockfiles para reconstruir el entorno.
+
+Actualización del 8 de octubre: filtros del panel usan fechas de Cuautla y rechazan intervalos invertidos; CSV permite la página visible y todos los resultados filtrados hasta 5,000 registros, con protección contra fórmulas. La recuperación de contraseña usa `NEXT_PUBLIC_CITIZEN_APP_URL`; configurar antes de publicar. Ver [registro de correcciones](docs/correcciones-2026-10-08.md).
 
 Prioridad recomendada: ubicación real y revisión móvil → flujo completo y seguridad → funciones administrativas pendientes → documentación y limpieza → publicación. Todo el trabajo debe respetar el costo cero del piloto.
 

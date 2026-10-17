@@ -1,0 +1,9 @@
+erDiagram
+  public_consents {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid user_id FK "required"
+    text consent_type "required"
+    text privacy_notice_version "required"
+    timestamptz accepted_at "required"
+  }

@@ -1,0 +1,16 @@
+flowchart LR
+ C[Ciudadano] --> P1[1 Autenticación y perfil]
+ P1 <--> D1[(Auth y perfiles)]
+ C --> P2[2 Captura de reporte]
+ P2 --> D2[(Reportes, imágenes e historial)]
+ P2 --> D3[(Objetos privados)]
+ A[Personal autorizado] --> P3[3 Gestión y asignación]
+ P3 <--> D2
+ P3 --> D4[(Auditoría)]
+ D2 --> P4[4 Generar avisos]
+ P4 --> D5[(Notificaciones)]
+ D5 --> P5[5 Consultar avisos propios]
+ P5 --> C
+ C --> P6[6 Identidad sintética]
+ P6 --> D6[(Consentimientos y verificaciones)]
+ P6 --> D3

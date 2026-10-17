@@ -1,0 +1,87 @@
+erDiagram
+  public_municipalities {
+    uuid id PK "required"
+    text name "required"
+    text state "required"
+    text logo_url "nullable"
+    bool is_active "required"
+    timestamptz created_at "required"
+    timestamptz updated_at "required"
+  }
+  public_priorities {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    text name "required"
+    int2 rank "required"
+    bool is_active "required"
+  }
+  public_categories {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    text name "required"
+    text description "nullable"
+    text icon "nullable"
+    uuid default_priority_id FK "required"
+    bool requires_photo "required"
+    bool requires_location "required"
+    bool is_public "required"
+    bool is_active "required"
+    int4 sort_order "required"
+    jsonb dynamic_form_schema "required"
+    timestamptz created_at "required"
+    timestamptz updated_at "required"
+  }
+  public_subcategories {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid category_id FK "required"
+    text name "required"
+    bool is_active "required"
+    int4 sort_order "required"
+  }
+  public_departments {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    text name "required"
+    bool is_active "required"
+    timestamptz created_at "required"
+    timestamptz updated_at "required"
+  }
+  public_zones {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    text name "required"
+    extensions_geometry boundary "required"
+  }
+  public_settings {
+    uuid municipality_id PK, FK "required"
+    int4 identity_retention_days "nullable"
+    int4 evidence_retention_days "nullable"
+    text privacy_notice_version "nullable"
+    text privacy_notice_url "nullable"
+    text emergency_contact "nullable"
+    int2 max_report_images "required"
+    timestamptz updated_at "required"
+    bool citizen_registration_enabled "required"
+    bool pilot_reports_enabled "required"
+  }
+  public_sla_rules {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid category_id FK "nullable"
+    uuid priority_id FK "required"
+    int4 response_minutes "required"
+    int4 resolution_minutes "required"
+    bool is_active "required"
+  }
+  public_municipalities ||--o{ public_priorities : "municipality_id"
+  public_municipalities ||--o{ public_categories : "municipality_id"
+  public_priorities ||--o{ public_categories : "default_priority_id, municipality_id"
+  public_municipalities ||--o{ public_subcategories : "municipality_id"
+  public_categories ||--o{ public_subcategories : "category_id, municipality_id"
+  public_municipalities ||--o{ public_departments : "municipality_id"
+  public_municipalities ||--o{ public_zones : "municipality_id"
+  public_municipalities ||--o| public_settings : "municipality_id"
+  public_municipalities ||--o{ public_sla_rules : "municipality_id"
+  public_categories |o--o{ public_sla_rules : "category_id, municipality_id"
+  public_priorities ||--o{ public_sla_rules : "priority_id, municipality_id"

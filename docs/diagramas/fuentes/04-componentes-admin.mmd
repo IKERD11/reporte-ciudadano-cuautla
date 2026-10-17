@@ -1,0 +1,12 @@
+flowchart LR
+ Page[page.tsx] --> Login[Acceso / sesión]
+ Page --> Summary[Resumen y métricas]
+ Page --> Reports[Reportes y detalle]
+ Page --> Teams[Equipos / configuración]
+ Page --> Map[report-map.tsx]
+ Page --> Controls[modern-controls.tsx]
+ Summary --> Charts[metric-charts.tsx]
+ Page --> API[api.ts: call]
+ API --> RPC[admin_pilot]
+ Page -. solo demostración .-> Demo[demo.ts: datos en memoria]
+ RPC --> DB[(PostgreSQL)]

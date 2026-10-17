@@ -1,0 +1,15 @@
+flowchart TD
+ C[pg_cron: cada 15 minutos] --> V[Leer token de Vault]
+ V --> H[pg_net POST identity-purge]
+ H --> A{Token autorizado}
+ A -->|No| X[401 / sin modificación]
+ A -->|Sí| I[Consultar muestras vencidas]
+ I --> D[Borrar objetos de identity-documents]
+ D --> F{Storage confirma}
+ F -->|Sí| M[Marcar documentos purgados]
+ F -->|No| R[Registrar fallo para reintento]
+ M --> U[Consultar reservas de reportes vencidas sin commit]
+ U --> E[Borrar cargas huérfanas de report-evidence]
+ E --> P[Marcar reservas purgadas tras éxito]
+ P --> O[Responder contadores de éxito y fallos]
+ R --> O

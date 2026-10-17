@@ -1,0 +1,16 @@
+sequenceDiagram
+ participant UI as PrivateReportImage
+ participant E as report-pilot
+ participant R as report_pilot_service
+ participant S as Storage
+ UI->>E: image(report_id,image_id) + JWT
+ E->>E: Validar token con Auth
+ E->>R: Validar propietario y municipio
+ R-->>E: storage_path autorizado
+ E->>S: createSignedUrl(path,60)
+ S-->>E: URL temporal
+ E-->>UI: URL
+ UI->>S: Descargar foto
+ alt Error o enlace vencido
+ UI->>UI: Mostrar opción de renovar
+ end

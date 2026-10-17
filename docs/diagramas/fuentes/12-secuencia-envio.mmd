@@ -1,0 +1,30 @@
+sequenceDiagram
+ actor C as Ciudadano
+ participant F as Flutter
+ participant E as Edge report-pilot
+ participant A as Auth
+ participant DB as report_pilot_service
+ participant S as Storage privado
+ C->>F: Confirmar envío
+ F->>E: JWT, request_key, payload, fotos
+ E->>A: getUser(token)
+ A-->>E: Usuario validado
+ E->>DB: context con actor y session_id
+ DB->>DB: Sesión, municipio y habilitación
+ E->>E: Normalizar fotos y calcular hash
+ E->>DB: reserve(payload)
+ DB->>DB: Validar permiso, datos, cuota e idempotencia
+ DB-->>E: Ticket y rutas
+ alt Ticket ya confirmado
+ E-->>F: Mismo reporte y folio
+ else Carga pendiente
+ loop Cada foto
+ E->>S: upload sin sobrescribir
+ end
+ E->>DB: commit con el mismo payload
+ DB->>DB: Verificar objetos y crear reporte, imágenes e historial
+ DB->>DB: Trigger de notificación
+ DB-->>E: id y folio
+ E-->>F: Confirmación
+ end
+ F-->>C: Reporte registrado

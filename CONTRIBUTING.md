@@ -4,7 +4,7 @@ Piloto de Reporte Ciudadano para Cuautla, Morelos. Mantener costo cero, reportes
 
 ## Preparación
 
-Instalar Git, Node.js 22, Flutter compatible con Dart 3.10.4 y, para la base local, Docker Desktop. Los lockfiles fijan las dependencias; usar `npm ci` y `flutter pub get`, sin actualizaciones masivas.
+Instalar Git, Node.js 22.18 o posterior (las pruebas usan TypeScript nativo), Flutter compatible con Dart 3.10.4 y, para la base local, Docker Desktop. Los lockfiles fijan las dependencias; usar `npm ci` y `flutter pub get`, sin actualizaciones masivas.
 
 1. Clonar el repositorio e instalar las herramientas raíz con `npm ci`.
 2. Copiar `apps/mobile/config/pilot.example.json` a `apps/mobile/config/pilot.json`.

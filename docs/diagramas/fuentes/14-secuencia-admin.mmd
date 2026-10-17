@@ -1,0 +1,20 @@
+sequenceDiagram
+ actor O as Personal autorizado
+ participant P as Panel
+ participant R as admin_pilot
+ participant DB as PostgreSQL
+ O->>P: Abrir detalle
+ P->>R: detail con id
+ R-->>P: Reporte y admin_version
+ O->>P: Cambiar estado, prioridad o asignación
+ P->>R: Acción, id y versión leída
+ R->>DB: Validar sesión, permiso, municipio y alcance
+ R->>DB: Bloquear reporte y comparar versión
+ alt Versión distinta
+ R-->>P: 40001 - recargar
+ else Cambio autorizado
+ R->>DB: Mutación y aumento de versión
+ DB->>DB: Historial / auditoría según acción
+ DB->>DB: Aviso si cambia estado o asignación
+ R-->>P: saved true
+ end

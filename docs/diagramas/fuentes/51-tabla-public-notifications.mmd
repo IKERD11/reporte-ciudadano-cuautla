@@ -1,0 +1,11 @@
+erDiagram
+  public_notifications {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid user_id FK "required"
+    uuid report_id FK "nullable"
+    text title "required"
+    text body "required"
+    timestamptz read_at "nullable"
+    timestamptz created_at "required"
+  }

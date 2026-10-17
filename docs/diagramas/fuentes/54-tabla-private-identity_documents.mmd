@@ -1,0 +1,8 @@
+erDiagram
+  private_identity_documents {
+    uuid verification_id PK, FK "required"
+    text side PK "required"
+    text storage_path UK "required"
+    timestamptz uploaded_at "nullable"
+    timestamptz deleted_at "nullable"
+  }

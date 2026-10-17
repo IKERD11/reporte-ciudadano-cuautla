@@ -1,0 +1,17 @@
+erDiagram
+  public_categories {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    text name "required"
+    text description "nullable"
+    text icon "nullable"
+    uuid default_priority_id FK "required"
+    bool requires_photo "required"
+    bool requires_location "required"
+    bool is_public "required"
+    bool is_active "required"
+    int4 sort_order "required"
+    jsonb dynamic_form_schema "required"
+    timestamptz created_at "required"
+    timestamptz updated_at "required"
+  }

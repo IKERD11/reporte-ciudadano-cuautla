@@ -1,0 +1,23 @@
+classDiagram
+class CitizenHome
+class CitizenHomeState {
++refreshUnread()
++notifications()
+}
+class NotificationsScreen {
++ReportRepository repository
+}
+class NotificationsScreenState {
++load(page)
++open(item)
+}
+class ReportRepository {
+<<interface>>
++call(action,values)
+}
+CitizenHome *-- CitizenHomeState
+CitizenHomeState ..> NotificationsScreen : abre
+NotificationsScreen *-- NotificationsScreenState
+NotificationsScreen --> ReportRepository
+NotificationsScreenState ..> ReportRepository : notifications_list / read
+CitizenHomeState ..> ReportRepository : notifications_count

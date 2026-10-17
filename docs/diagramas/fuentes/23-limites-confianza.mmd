@@ -1,0 +1,22 @@
+flowchart TB
+ subgraph U[Cliente no confiable]
+ UI[Flutter / panel]
+ Data[Datos, IDs y versión enviados]
+ UI --> Data
+ end
+ subgraph G[Entrada validada]
+ Auth[Auth valida JWT]
+ Edge[Edge valida método, origen, tamaño y contenido]
+ RPC[RPC valida sesión y permisos]
+ end
+ subgraph DB[Persistencia protegida]
+ RLS[RLS + concesiones SQL]
+ FK[FK compuestas con municipio]
+ Tables[(Tablas de aplicación)]
+ Storage[(Buckets privados)]
+ end
+ Data --> Auth --> Edge --> RPC
+ Data -->|RPC con JWT| RPC
+ RPC --> RLS --> Tables
+ RPC --> FK --> Tables
+ Edge -->|solo tras autorización| Storage

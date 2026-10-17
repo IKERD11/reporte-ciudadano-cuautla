@@ -1,0 +1,11 @@
+flowchart LR
+F[Cliente Flutter] -->|Auth / sesión| A[Supabase Auth]
+N[Cliente administrativo] -->|Auth / sesión| A
+F -->|HTTPS + JWT| E[Edge report-pilot / identity-pilot]
+F -->|RPC perfil y avisos| R[Data API]
+N -->|RPC admin_pilot| R
+E --> D[(PostgreSQL)]
+R --> D
+E --> S[(Storage privado)]
+N -->|URL firmada autorizada| S
+F -->|URL temporal| S

@@ -1,0 +1,15 @@
+flowchart TB
+ subgraph Equipo[Equipo de desarrollo]
+ Git[Checkout Git]
+ Flutter[Flutter SDK / compilación web]
+ Web[Servidor local 127.0.0.1:3000]
+ Next[Next.js 127.0.0.1:3001]
+ Browser[Navegador]
+ Git --> Flutter --> Web --> Browser
+ Git --> Next --> Browser
+ end
+ GitHub[GitHub privado / main] -->|clone y pull| Git
+ Browser -->|HTTPS| Cloud[Supabase del piloto]
+ Browser -->|HTTPS teselas| OSM[OpenStreetMap]
+ Git -. alternativa para pruebas .-> Docker[Supabase local con Docker]
+ Pending[Hosting público y distribución móvil: pendientes]

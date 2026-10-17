@@ -1,0 +1,10 @@
+erDiagram
+  public_report_images {
+    uuid id PK "required"
+    uuid municipality_id FK "required"
+    uuid report_id FK "required"
+    text storage_path UK "required"
+    text mime_type "required"
+    int8 size "required"
+    timestamptz created_at "required"
+  }

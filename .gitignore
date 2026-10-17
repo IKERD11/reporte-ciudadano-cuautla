@@ -17,3 +17,5 @@ apps/mobile/config/pilot.json
 *.keystore
 key.properties
 __pycache__/
+tmp/
+backups/

@@ -1,0 +1,36 @@
+classDiagram
+ class ReportRepository {
+ <<abstract>>
+ +call(action,values) Future~Map~
+ }
+ class SupabaseReportRepository {
+ +client SupabaseClient
+ +call(action,values) Future~Map~
+ }
+ class ReportsScreen
+ class ReportWizard {
+ +categories List~Map~
+ +repository ReportRepository
+ +onCreated callback
+ +onCancel callback
+ }
+ class ReportMap {
+ +point LatLng
+ +onSelected callback
+ +height double
+ }
+ class PrivateReportImage {
+ +reportId String
+ +imageId String
+ +large bool
+ }
+ class NotificationsScreen
+ ReportRepository <|.. SupabaseReportRepository
+ ReportsScreen --> ReportRepository
+ ReportsScreen --> ReportWizard
+ ReportsScreen --> PrivateReportImage
+ ReportWizard --> ReportRepository
+ ReportWizard --> ReportMap
+ PrivateReportImage --> ReportRepository
+ NotificationsScreen --> ReportRepository
+ NotificationsScreen --> ReportsScreen : abre detalle
