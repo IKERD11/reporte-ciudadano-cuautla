@@ -33,3 +33,7 @@
 Uso exclusivo para direcciones públicas del incidente en Cuautla; no nombres, teléfonos, correos ni domicilios privados. Sin autocompletado, consultas periódicas, descarga masiva ni búsquedas automáticas al escribir. No tiene garantía de disponibilidad: se conserva GPS, dirección manual y mapa.
 
 El responsable debe cumplir la [política de Nominatim](https://operations.osmfoundation.org/policies/nominatim/) y la [licencia ODbL / atribución](https://www.openstreetmap.org/copyright). La aplicación muestra atribución al proveedor. El límite gratuito es una restricción operativa, no una garantía comercial.
+
+## Entrega del 16 de octubre
+
+Código, migraciones, pruebas, atlas histórico y PDF subidos al repositorio privado en `af8797a`. Se añadió el [procedimiento de respaldo y restauración](respaldo-restauracion.md); el ensayo sigue pendiente por falta del motor Docker local. No se activó facturación, publicación de aplicaciones ni acceso a INE reales.

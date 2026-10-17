@@ -30,7 +30,7 @@ El proyecto es un piloto en desarrollo, no una aplicación municipal terminada. 
 ### Backend, seguridad y entrega
 
 - Ejecutar el flujo completo ciudadano → administración → notificación con cuentas de prueba de distintos roles y municipios; comprobar aislamiento, sesiones revocadas, evidencias privadas y límites de uso.
-- Verificar todas las migraciones desde una base local limpia y documentar respaldo/restauración y límites del plan gratuito. No ejecutar un reset contra el proyecto remoto.
+- Verificar todas las migraciones desde una base local limpia y ensayar el [procedimiento de respaldo/restauración](docs/respaldo-restauracion.md) ya documentado. No ejecutar un reset contra el proyecto remoto.
 - Revisar los avisos de seguridad conocidos y documentados, incluyendo protección de contraseñas filtradas desactivada; no cambiar políticas ni contratar funciones sin evaluar su efecto y costo.
 - Preparar la publicación cuando corresponda: aún no hay despliegue público configurado por este repositorio. La plantilla de CI está en `docs/ci/`, sin activar.
 - Para una futura operación real faltan aviso de privacidad y términos aprobados, política de conservación y responsables autorizados. Mientras tanto, mantener bloqueadas las INE reales y conservar la modalidad de prueba.
