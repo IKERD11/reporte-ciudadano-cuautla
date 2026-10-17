@@ -1,0 +1,97 @@
+REPORTE CIUDADANO — ESTADO Y PENDIENTES
+Actualizado: 16 de octubre de 2026
+Piloto: Cuautla, Morelos. Costo cero. Alcance actual: versión web.
+
+1. IMPLEMENTADO (NO VOLVER A LISTAR COMO DESARROLLO PENDIENTE)
+
+[x] Reportes de prueba, fotografías, mapa, seguimiento y avisos internos.
+[x] Búsqueda por dirección pública con botón explícito, candidatos y marcador.
+    Nominatim autorizado para el piloto; caché de 30 días, consultas
+    serializadas y máximo de 100 consultas externas al día entre todos.
+    Escribir por sí solo no consulta ni coloca un marcador.
+[x] Gestión de roles existentes para cuentas registradas del municipio,
+    confirmación de cambios, auditoría y protección de casos activos.
+[x] Exportación CSV de página o resultados filtrados, hasta 5,000 registros,
+    sin truncamiento silencioso y con protección contra fórmulas.
+[x] Correcciones de fechas de Cuautla, intervalos invertidos, textos de
+    notificaciones y enlace configurable de recuperación de contraseña.
+[x] Demostración restringida a desarrollo y deshabilitada en producción.
+[x] Procedimiento de respaldo y restauración documentado. Aún no ensayado.
+
+2. PENDIENTES PARA CERRAR Y PUBLICAR EL PILOTO WEB
+
+[ ] Validar GPS REAL y permisos del navegador en un dispositivo real.
+    Los ajustes y pruebas simuladas NO acreditan que esto esté resuelto.
+[ ] Probar búsqueda por dirección con sesión iniciada y direcciones públicas
+    de Cuautla; confirmar candidatos, marcador y comportamiento sin resultados.
+    La consulta aislada al proveedor respondió sin candidatos: no acredita
+    cobertura local ni el flujo completo.
+[ ] Ejecutar el recorrido en navegador: ciudadano crea reporte con imagen
+    sintética -> administrador asigna y cambia estado -> ciudadano ve aviso.
+    Verificar cuentas de distintos roles, sesiones y acceso a evidencias.
+[ ] Revisar interfaz web en tamaños de teléfono y escritorio: teclado,
+    textos largos, accesibilidad, menú lateral/inferior, tarjetas del mapa,
+    calendarios, tablas, gráficas y formularios.
+[ ] Validar visualmente métricas y filtros con datos representativos: vacíos,
+    fechas límite, estados, reportes sin coordenadas y cambios concurrentes.
+[ ] Reconstruir todas las migraciones desde una base LOCAL limpia y ejecutar
+    las pruebas. Bloqueo actual: motor Docker local no disponible.
+    NUNCA ejecutar un reset contra la base remota.
+[ ] Ensayar respaldo y restauración local, incluyendo archivos de Storage.
+    El procedimiento existe en docs/respaldo-restauracion.md; no equivale
+    a un respaldo creado ni a una restauración comprobada.
+[ ] Configurar publicación de la app ciudadana y del panel sin activar pagos;
+    comprobar dominios, recuperación de cuenta, redirecciones y configuración
+    de seguridad. Solo el atlas de diagramas está publicado actualmente.
+[ ] Activar y comprobar la integración continua. La plantilla sigue en
+    docs/ci/; todavía no está habilitada como workflow de GitHub.
+[ ] Revisar seguridad al desplegar y documentar los avisos pendientes:
+    protección de contraseñas filtradas desactivada; cuatro tablas privadas
+    sin políticas deniegan acceso directo intencionalmente. No ampliar
+    permisos solo para silenciar avisos ni contratar funciones de pago.
+[ ] Actualizar atlas, PDF y documentación del modelo con las tablas de caché,
+    búsqueda por dirección y cambios de roles. Los diagramas actuales son
+    una instantánea histórica, no el esquema completo actualizado.
+[ ] Revisar enlaces, textos provisionales y recursos antiguos. Retirar solo
+    archivos sin referencias ni valor documental; conservar pruebas y fixtures.
+
+3. VALIDACIÓN YA REALIZADA
+
+- 100 comprobaciones de base de datos aprobadas sobre la base existente,
+  en transacciones revertidas: 53 administración/roles/exportación/avisos,
+  26 reportes, 12 identidad sintética y 9 geocodificación.
+- Flutter: 23 pruebas, análisis y compilación web aprobados.
+- Panel: 3 pruebas de fechas/CSV/conteos y compilación aprobadas.
+- Geocodificación: 3 pruebas de normalización y límites aprobadas.
+Estas comprobaciones NO sustituyen GPS real, revisión visual, reconstrucción
+limpia, restauración ni validación de un despliegue público.
+
+4. POSPUESTO O CONDICIONAL (NO OBLIGATORIO PARA EL ALCANCE WEB ACTUAL)
+
+- Android/iOS: pospuestos por decisión del usuario. Faltan pruebas nativas
+  de instalación, permisos, cámara, galería, GPS y autenticación.
+- Notificaciones con la app cerrada: no implementadas; decidir alcance.
+  Los avisos internos sí están implementados.
+- Roles personalizados e invitaciones por correo: no implementados;
+  decidir si son necesarios. La administración de roles existentes sí existe.
+
+5. REQUISITOS ANTES DE OPERACIÓN MUNICIPAL REAL
+
+[ ] Aviso de privacidad y términos aprobados.
+[ ] Política de conservación y eliminación de datos.
+[ ] Responsables autorizados y autorización para la operación real.
+Hasta entonces: mantener INE reales bloqueadas, usar datos sintéticos y
+conservar etiquetas de prueba piloto. No presentar reportes como atención
+municipal real ni retirar estas restricciones por motivos de diseño.
+
+6. REGLAS DE ENTREGA
+
+- No subir secretos, sesiones, respaldos privados, dependencias ni compilaciones.
+- Conservar plantillas, lockfiles, fixtures y pruebas para colaboradores.
+- Mantener costo cero y revisar límites antes de habilitar servicios.
+- Registrar evidencia al cerrar cada pendiente; no marcarlo completo solo
+  porque existe código o documentación.
+
+Detalle y evidencia: docs/cierre-piloto-2026-10-15.md
+Respaldo/restauración: docs/respaldo-restauracion.md
+Instalación y colaboración: CONTRIBUTING.md

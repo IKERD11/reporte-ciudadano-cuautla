@@ -6,52 +6,34 @@ Consultar el [atlas técnico de 55 diagramas](docs/diagramas/README.md): arquite
 
 **Colaboradores:** empezar por [CONTRIBUTING.md](CONTRIBUTING.md), con instalación, configuración, pruebas y reglas del piloto. Las notificaciones de fase 6 están documentadas en [fase 6](docs/fase-6-notificaciones.md).
 
-Estado actualizado: [cierre y pendientes comprobados, 15 de octubre](docs/cierre-piloto-2026-10-15.md).
+Estado actualizado al 16 de octubre: [lista de pendientes](PENDIENTES.txt) y [registro de comprobaciones](docs/cierre-piloto-2026-10-15.md).
 
 ## Qué falta desarrollar, corregir o retirar
 
-El proyecto es un piloto en desarrollo, no una aplicación municipal terminada. Esta lista sirve como punto de partida para los colaboradores; no sustituye una revisión completa del código.
+**Actualizado al 16 de octubre de 2026:** consultar [PENDIENTES.txt](PENDIENTES.txt) para la lista de entrega y [evidencia de validación](docs/cierre-piloto-2026-10-15.md) para distinguir lo probado de lo pendiente. El sistema sigue en modalidad piloto; el alcance actual es web.
 
-### App ciudadana (Flutter)
+**Implementado:** reportes y avisos internos, búsqueda explícita por dirección con candidatos y marcador, administración de roles municipales existentes, auditoría y exportación CSV filtrada hasta 5,000 registros. También se corrigieron filtros de fechas, textos de notificaciones y acceso a demostración en producción. El procedimiento de respaldo está documentado, pero aún no se ha ensayado.
 
-- **Corregir y comprobar la ubicación real:** el navegador integrado ha agotado el tiempo de espera. Se ajustó la solicitud y se probó con ubicaciones simuladas, pero falta validar permisos y captura real en navegadores y dispositivos. No dar este problema por resuelto solo porque pasan las pruebas.
-- **Búsqueda por dirección implementada:** botón explícito, candidatos seleccionables y marcador; caché y límites compartidos. Falta validación visual autenticada y de cobertura local.
-- **Revisar la interfaz en dispositivos reales:** tamaños de tarjetas, teclado, textos largos, accesibilidad, navegación inferior/lateral y tarjeta sobre el marcador con fotos reales del piloto. Los últimos ajustes tienen pruebas automatizadas, pero falta la validación manual completa.
-- **Probar Android/iOS:** instalación, permisos, cámara, galería, GPS, autenticación y recuperación de cuenta. La versión web es la más trabajada.
-- **Completar las notificaciones si el alcance lo requiere:** existen avisos internos; no hay notificaciones del sistema operativo con la app cerrada.
+**Pendiente para cerrar el piloto web:**
 
-### Panel administrativo (Next.js)
+- Comprobar GPS real, permisos y búsqueda autenticada con direcciones públicas de Cuautla. Las pruebas simuladas no sustituyen esta validación.
+- Completar el recorrido en navegador ciudadano → administración → aviso, y revisar accesibilidad, tamaños, teclado, mapas, métricas y filtros con datos representativos.
+- Reconstruir una base local limpia y ensayar respaldo/restauración, incluidos archivos de Storage. Docker local sigue sin estar disponible; nunca ejecutar un reset remoto.
+- Publicar app y panel con costo cero, verificar configuración de autenticación y seguridad, y activar CI. Solo el atlas está publicado; CI sigue como plantilla.
+- Actualizar atlas/PDF con geocodificación, caché y roles; revisar textos, enlaces y recursos antiguos sin eliminar pruebas o documentación útil.
+- Revisar los avisos de seguridad conocidos: protección de contraseñas filtradas desactivada y denegación intencional de acceso directo a cuatro tablas privadas. No ampliar permisos para silenciar avisos.
 
-- **Roles municipales y exportación implementados:** cuentas registradas del municipio, confirmación y auditoría, CSV filtrado hasta 5,000 registros. Roles personalizados e invitaciones por correo quedan fuera de esta implementación.
-- **Validar métricas y filtros** con conjuntos de prueba representativos: fechas, estados, reportes sin coordenadas, datos vacíos y cambios concurrentes.
-- **Corregido el 8 de octubre:** configuración distingue notificaciones internas disponibles de avisos con la app cerrada pendientes.
-- **Revisar diseño adaptable y controles** en pantallas pequeñas: calendarios, tablas, menús, gráficas y formularios.
+Las pruebas automatizadas de base de datos y aplicaciones ya aprobadas se detallan en el registro de evidencia. No acreditan GPS real, reconstrucción limpia, restauración ni revisión visual completa.
 
-### Backend, seguridad y entrega
+**Pospuesto o condicionado al alcance:** Android/iOS por decisión del usuario; notificaciones con la app cerrada, roles personalizados e invitaciones por correo no implementados. Los avisos internos y los roles existentes sí están disponibles.
 
-- Ejecutar el flujo completo ciudadano → administración → notificación con cuentas de prueba de distintos roles y municipios; comprobar aislamiento, sesiones revocadas, evidencias privadas y límites de uso.
-- Verificar todas las migraciones desde una base local limpia y ensayar el [procedimiento de respaldo/restauración](docs/respaldo-restauracion.md) ya documentado. No ejecutar un reset contra el proyecto remoto.
-- Revisar los avisos de seguridad conocidos y documentados, incluyendo protección de contraseñas filtradas desactivada; no cambiar políticas ni contratar funciones sin evaluar su efecto y costo.
-- Preparar la publicación cuando corresponda: aún no hay despliegue público configurado por este repositorio. La plantilla de CI está en `docs/ci/`, sin activar.
-- Para una futura operación real faltan aviso de privacidad y términos aprobados, política de conservación y responsables autorizados. Mientras tanto, mantener bloqueadas las INE reales y conservar la modalidad de prueba.
-
-### Qué eliminar o sustituir antes de una entrega real
-
-- **Corregido el 8 de octubre:** acceso a demostración limitado a desarrollo con `NEXT_PUBLIC_ENABLE_DEMO=true`; deshabilitado en compilaciones de producción. Se conservan fixtures de desarrollo.
-- **Sustituir textos provisionales y documentación desactualizada**, así como enlaces o controles que una revisión funcional identifique como incompletos. No eliminar funciones útiles sin comprobar primero su uso.
-- **Revisar capturas y recursos antiguos** en `docs/` y `assets/`; retirar solo los que no tengan referencias ni valor como documentación.
-- **No eliminar fixtures ni pruebas necesarias para desarrollo.** Mantenerlos fuera de los datos operativos. No retirar las etiquetas de piloto hasta que exista autorización para operar realmente.
-- **No subir secretos, sesiones, dependencias descargadas ni compilaciones** al repositorio. Se conservan plantillas y lockfiles para reconstruir el entorno.
-
-Actualización del 8 de octubre: filtros del panel usan fechas de Cuautla y rechazan intervalos invertidos; CSV permite la página visible y todos los resultados filtrados hasta 5,000 registros, con protección contra fórmulas. La recuperación de contraseña usa `NEXT_PUBLIC_CITIZEN_APP_URL`; configurar antes de publicar. Ver [registro de correcciones](docs/correcciones-2026-10-08.md).
-
-Prioridad recomendada: ubicación real y revisión móvil → flujo completo y seguridad → funciones administrativas pendientes → documentación y limpieza → publicación. Todo el trabajo debe respetar el costo cero del piloto.
+**Antes de operar realmente:** aprobar privacidad y términos, conservación de datos y responsables autorizados. Mantener bloqueadas las INE reales, datos sintéticos y etiquetas de piloto. No subir secretos, sesiones, respaldos privados, dependencias descargadas ni compilaciones.
 
 **Piloto de Cuautla, Morelos: costo cero obligatorio.** Consultar [restricciones de presupuesto](docs/piloto-costo-cero.md) antes de configurar cualquier servicio.
 
 Plataforma municipal con Flutter, Next.js y Supabase. **Fases 1 y 2 implementadas; fase 3 con muestras sintéticas y fase 4 con reportes de prueba y panel administrativo de fase 5 implementado para el piloto.** Flutter conecta al Supabase real. La captura de INE reales y la operación municipal siguen deshabilitadas.
 
-**Estado:** consultar [fase 4: ejecutar y probar](docs/fase-4-reportes.md) para la validación más reciente y las limitaciones. El asesor conserva avisos conocidos sobre tablas privadas sin políticas (denegación intencional) y protección de contraseñas filtradas desactivada. Dispositivos nativos y Docker local siguen pendientes.
+**Estado:** consultar el [registro de cierre y validación](docs/cierre-piloto-2026-10-15.md) para la evidencia más reciente y las limitaciones. El asesor conserva avisos conocidos sobre tablas privadas sin políticas (denegación intencional) y protección de contraseñas filtradas desactivada. Dispositivos nativos y Docker local siguen pendientes.
 
 ## Diseño
 
