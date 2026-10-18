@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'citizen_home_dashboard.dart';
 import '../../notifications/notifications_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -167,189 +168,90 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
     }
   }
 
-  Widget action(
-    String title,
-    String subtitle,
-    IconData icon,
-    VoidCallback onTap, {
-    bool prominent = false,
-  }) => Card(
-    child: InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: prominent
-            ? Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(17),
-                    decoration: BoxDecoration(
-                      color: citizenAccent,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(icon, color: Colors.white, size: 28),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
+  Widget home() => Builder(
+    builder: (homeContext) => CitizenHomeDashboard(
+      name: widget.auth.profile!.firstName,
+      unread: unread,
+      onMenu: () => Scaffold.of(homeContext).openDrawer(),
+      onReport: () => reports(create: true),
+      onMap: () => selectTab(2),
+      onReports: () => selectTab(1),
+      onNotifications: notifications,
+      onHelp: () => info(
+        'Ayuda del piloto',
+        'Consulta tus reportes y sus avisos desde esta aplicación. Las pruebas no envían solicitudes de emergencia ni tienen atención municipal real.',
+      ),
+    ),
+  );
+
+  Widget homeNavigation() => SafeArea(
+    top: false,
+    child: Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+      ),
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 10),
+      child: Row(
+        children: [
+          for (final entry in [
+            (0, Icons.home_rounded, 'Inicio'),
+            (2, Icons.map_outlined, 'Mapa'),
+            (4, Icons.add, 'Reportar'),
+            (1, Icons.history_rounded, 'Actividad'),
+            (3, Icons.person_rounded, 'Perfil'),
+          ])
+            Expanded(
+              child: Semantics(
+                selected: entry.$1 == 0,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => entry.$1 == 4
+                      ? reports(create: true)
+                      : selectTab(entry.$1),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
+                        if (entry.$1 == 4)
+                          const CircleAvatar(
+                            radius: 25,
+                            backgroundColor: Color(0xff00b995),
+                            child: Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 34,
+                            ),
+                          )
+                        else
+                          Icon(
+                            entry.$2,
+                            size: 28,
+                            color: entry.$1 == 0
+                                ? const Color(0xff0755d9)
+                                : const Color(0xff6387af),
+                          ),
+                        const SizedBox(height: 4),
                         Text(
-                          title,
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          subtitle,
-                          style: const TextStyle(color: muted, fontSize: 12),
+                          entry.$3,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: entry.$1 == 0
+                                ? const Color(0xff0755d9)
+                                : const Color(0xff52759c),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right, color: muted),
-                ],
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(icon, color: navy, size: 28),
-                  const SizedBox(height: 16),
-                  Text(
-                    title,
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(color: muted, fontSize: 12),
-                  ),
-                ],
-              ),
-      ),
-    ),
-  );
-  Widget home() => ListView(
-    padding: const EdgeInsets.all(24),
-    children: [
-      Text(
-        'Hola, ${widget.auth.profile!.firstName}',
-        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-          color: navy,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-      const SizedBox(height: 5),
-      const Text(
-        'Juntos hacemos una mejor ciudad',
-        style: TextStyle(color: muted),
-      ),
-      const SizedBox(height: 26),
-      action(
-        'Realizar un reporte',
-        'Comparte lo que ves',
-        Icons.add_location_alt_outlined,
-        () => reports(create: true),
-        prominent: true,
-      ),
-      IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: action(
-                'Mis reportes',
-                'Consulta el estado de tus reportes',
-                Icons.assignment_outlined,
-                () => selectTab(1),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: action(
-                'Mapa de reportes',
-                'Consulta tus ubicaciones',
-                Icons.map_outlined,
-                () => selectTab(2),
-              ),
-            ),
-          ],
-        ),
-      ),
-      const SizedBox(height: 26),
-      const Text(
-        'Tipos de reporte',
-        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-      ),
-      const SizedBox(height: 16),
-      if (loading)
-        const LinearProgressIndicator()
-      else if (error != null)
-        TextButton(onPressed: load, child: Text('$error Reintentar'))
-      else
-        Wrap(
-          spacing: 14,
-          runSpacing: 20,
-          children: [
-            for (var i = 0; i < categories.length; i++)
-              SizedBox(
-                width: 90,
-                child: InkWell(
-                  onTap: () => reports(create: true),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 25,
-                        backgroundColor: const [
-                          Color(0xfff49a36),
-                          Color(0xff149bea),
-                          Color(0xff24ad69),
-                          Color(0xff8951dc),
-                        ][i % 4],
-                        child: Icon(
-                          const [
-                            Icons.construction,
-                            Icons.lightbulb_outline,
-                            Icons.eco_outlined,
-                            Icons.category_outlined,
-                          ][i % 4],
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 9),
-                      Text(
-                        categories[i]['name'],
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ],
-                  ),
                 ),
               ),
-          ],
-        ),
-      const SizedBox(height: 30),
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xff182e30),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: const Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(Icons.science_outlined, color: Color(0xff6ee7b5)),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Piloto de Cuautla\nReportes de prueba sin atención municipal real.',
-                style: TextStyle(fontSize: 12),
-              ),
             ),
-          ],
-        ),
+        ],
       ),
-    ],
+    ),
   );
   Widget reportPreview(Map<String, dynamic> report) {
     final images = report['images'] as List? ?? [];
@@ -598,27 +500,30 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
   );
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: Text(
-        const [
-          'Reporte Ciudadano',
-          'Mis reportes',
-          'Mapa de reportes',
-          'Mi perfil',
-        ][tab],
-      ),
-      actions: [
-        IconButton(
-          tooltip: 'Notificaciones',
-          onPressed: notifications,
-          icon: Badge(
-            isLabelVisible: unread > 0,
-            label: Text(unread > 99 ? '99+' : '$unread'),
-            child: const Icon(Icons.notifications_outlined),
+    backgroundColor: tab == 0 ? const Color(0xffedf9ff) : citizenBackground,
+    appBar: tab == 0
+        ? null
+        : AppBar(
+            title: Text(
+              const [
+                'Reporte Ciudadano',
+                'Mis reportes',
+                'Mapa de reportes',
+                'Mi perfil',
+              ][tab],
+            ),
+            actions: [
+              IconButton(
+                tooltip: 'Notificaciones',
+                onPressed: notifications,
+                icon: Badge(
+                  isLabelVisible: unread > 0,
+                  label: Text(unread > 99 ? '99+' : '$unread'),
+                  child: const Icon(Icons.notifications_outlined),
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
-    ),
     drawer: Drawer(
       backgroundColor: citizenBackground,
       child: SafeArea(
@@ -695,45 +600,47 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
         },
       ),
     ),
-    bottomNavigationBar: NavigationBar(
-      selectedIndex: tab < 2 ? tab : tab + 1,
-      onDestinationSelected: (index) {
-        if (index == 2) {
-          reports(create: true);
-        } else {
-          selectTab(index > 2 ? index - 1 : index);
-        }
-      },
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home),
-          label: 'Inicio',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.assignment_outlined),
-          selectedIcon: Icon(Icons.assignment),
-          label: 'Mis reportes',
-        ),
-        NavigationDestination(
-          icon: CircleAvatar(
-            radius: 18,
-            backgroundColor: citizenAccent,
-            child: Icon(Icons.add, color: Colors.white),
+    bottomNavigationBar: tab == 0
+        ? homeNavigation()
+        : NavigationBar(
+            selectedIndex: tab < 2 ? tab : tab + 1,
+            onDestinationSelected: (index) {
+              if (index == 2) {
+                reports(create: true);
+              } else {
+                selectTab(index > 2 ? index - 1 : index);
+              }
+            },
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home),
+                label: 'Inicio',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.assignment_outlined),
+                selectedIcon: Icon(Icons.assignment),
+                label: 'Mis reportes',
+              ),
+              NavigationDestination(
+                icon: CircleAvatar(
+                  radius: 18,
+                  backgroundColor: citizenAccent,
+                  child: Icon(Icons.add, color: Colors.white),
+                ),
+                label: 'Crear',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.map_outlined),
+                selectedIcon: Icon(Icons.map),
+                label: 'Mapa',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.person_outline),
+                selectedIcon: Icon(Icons.person),
+                label: 'Perfil',
+              ),
+            ],
           ),
-          label: 'Crear',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.map_outlined),
-          selectedIcon: Icon(Icons.map),
-          label: 'Mapa',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(Icons.person),
-          label: 'Perfil',
-        ),
-      ],
-    ),
   );
 }
