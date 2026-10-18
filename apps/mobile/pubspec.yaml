@@ -36,12 +36,13 @@ dependencies:
   cupertino_icons: ^1.0.8
   supabase_flutter: 2.17.2
   flutter_secure_storage: 11.2.0
-  flutter_map: 8.2.2
   latlong2: 0.9.1
   geolocator: 14.0.2
   image_picker: 1.2.1
   image: 4.5.4
   url_launcher: 6.3.2
+  web: 1.1.1
+  pointer_interceptor: 0.10.1+3
 
 dev_dependencies:
   flutter_test:
@@ -63,8 +64,24 @@ flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
+  fonts:
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope-400.ttf
+          weight: 400
+        - asset: assets/fonts/Manrope-500.ttf
+          weight: 500
+        - asset: assets/fonts/Manrope-600.ttf
+          weight: 600
+        - asset: assets/fonts/Manrope-700.ttf
+          weight: 700
+        - asset: assets/fonts/Manrope-800.ttf
+          weight: 800
   uses-material-design: true
   assets:
+    - assets/renewal/
+    - assets/renewal/auth/
+    - assets/renewal/icons/3d/
     - assets/branding/welcome-cuautla.png
     - assets/branding/logo-rc.png
     - assets/branding/logo-violet.png

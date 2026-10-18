@@ -53,7 +53,13 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Aviso 0'));
     await tester.pumpAndSettle();
+    expect(find.text('Detalle de alerta'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Aviso 0'));
+    await tester.pumpAndSettle();
+    expect(find.text('Detalle de alerta'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.arrow_back));
     await tester.pumpAndSettle();
     expect(notices.reads, 1);
     await tester.scrollUntilVisible(find.text('Siguiente'), 500);

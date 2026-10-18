@@ -1,4 +1,6 @@
+import '../../../core/citizen_sticker.dart';
 import 'welcome_screen.dart';
+import '../../../core/citizen_design.dart';
 import '../../notifications/notifications_screen.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -9,6 +11,7 @@ import 'citizen_home.dart';
 import '../../identity/identity_screen.dart';
 import '../../identity/identity_repository.dart';
 import '../../reports/report_repository.dart';
+import '../../reports/report_address_search.dart';
 import '../application/auth_controller.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -28,6 +31,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final phone = TextEditingController();
   bool register = false, forgot = false, editing = false, obscure = true;
   bool welcomed = false;
+  bool repeatObscure = true;
   String? municipality;
   AuthStage? previous;
   AuthController get auth => widget.controller;
@@ -77,7 +81,16 @@ class _AuthScreenState extends State<AuthScreen> {
     child: TextFormField(
       controller: c,
       enabled: !auth.busy,
-      obscureText: secret && obscure,
+      obscureText: secret && (c == repeat ? repeatObscure : obscure),
+      autofillHints: c == email
+          ? const [AutofillHints.email]
+          : secret
+          ? [
+              register || auth.stage == AuthStage.recovery
+                  ? AutofillHints.newPassword
+                  : AutofillHints.password,
+            ]
+          : null,
       autocorrect: !secret,
       enableSuggestions: !secret,
       maxLength: secret ? null : max,
@@ -92,19 +105,27 @@ class _AuthScreenState extends State<AuthScreen> {
           secret
               ? Icons.lock_outline
               : c == email
-              ? Icons.person_outline
+              ? Icons.mail_outline
               : c == phone
               ? Icons.phone_outlined
               : Icons.badge_outlined,
           size: 20,
         ),
         counterText: '',
-        suffixIcon: secret && c == password
+        suffixIcon: secret
             ? IconButton(
-                tooltip: obscure ? 'Mostrar contraseña' : 'Ocultar contraseña',
-                onPressed: () => setState(() => obscure = !obscure),
+                tooltip: (c == repeat ? repeatObscure : obscure)
+                    ? 'Mostrar contraseña'
+                    : 'Ocultar contraseña',
+                onPressed: () => setState(() {
+                  if (c == repeat) {
+                    repeatObscure = !repeatObscure;
+                  } else {
+                    obscure = !obscure;
+                  }
+                }),
                 icon: Icon(
-                  obscure
+                  (c == repeat ? repeatObscure : obscure)
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
                 ),
@@ -139,7 +160,9 @@ class _AuthScreenState extends State<AuthScreen> {
     String title,
     Future<void> Function() action, {
     bool validate = true,
-  }) => FilledButton(
+  }) => DesignButton(
+    title,
+    arrow: true,
     onPressed: auth.busy
         ? null
         : () async {
@@ -149,7 +172,6 @@ class _AuthScreenState extends State<AuthScreen> {
             repeat.clear();
             await task;
           },
-    child: Text(title),
   );
   Widget heading(String title, String subtitle) => Padding(
     padding: const EdgeInsets.only(bottom: 28),
@@ -206,7 +228,7 @@ class _AuthScreenState extends State<AuthScreen> {
       case AuthStage.recovery:
         return [
           heading(
-            'Crea una nueva contraseña',
+            'Nueva contraseña',
             'Al guardarla, cerraremos las sesiones y podrás entrar de nuevo.',
           ),
           field('Nueva contraseña', password, secret: true),
@@ -294,8 +316,8 @@ class _AuthScreenState extends State<AuthScreen> {
           const Center(
             child: CircleAvatar(
               radius: 42,
-              backgroundColor: Color(0xff352557),
-              child: Icon(Icons.person, size: 56, color: navy),
+              backgroundColor: Color(0xffedf5fc),
+              child: CitizenSticker('user', size: 80),
             ),
           ),
           const SizedBox(height: 16),
@@ -406,19 +428,18 @@ class _AuthScreenState extends State<AuthScreen> {
         ];
       case AuthStage.signedOut:
         return [
-          if (forgot || register)
-            heading(
-              forgot
-                  ? 'Recupera tu acceso'
-                  : register
-                  ? 'Crea tu cuenta'
-                  : 'Bienvenido a tu comunidad',
-              forgot
-                  ? 'Te enviaremos un enlace para elegir una nueva contraseña.'
-                  : register
-                  ? 'Tu participación comienza con una cuenta segura.'
-                  : 'Inicia sesión para preparar tu perfil ciudadano.',
-            ),
+          heading(
+            forgot
+                ? 'Recupera tu cuenta'
+                : register
+                ? 'Únete a Ciudad Segura'
+                : '¡Qué gusto verte!',
+            forgot
+                ? 'Te enviaremos un enlace para elegir una nueva contraseña.'
+                : register
+                ? 'Tu participación comienza con una cuenta segura.'
+                : 'Inicia sesión para seguir cuidando tu comunidad.',
+          ),
           field('Correo electrónico', email, max: 254),
           if (!forgot) field('Contraseña', password, secret: true),
           if (register && !forgot)
@@ -465,37 +486,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   : 'Soy nuevo · Crear una cuenta',
             ),
           ),
-          const Divider(height: 32),
-          if (!forgot && !register) ...[
-            const Text(
-              'Otros accesos · aún no habilitados',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: muted, fontSize: 11),
-            ),
-            const SizedBox(height: 12),
-            const Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(onPressed: null, child: Text('Google')),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: null,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.apple),
-                        SizedBox(width: 6),
-                        Text('Apple'),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-          ],
+          const SizedBox(height: 20),
           const Text(
             'Piloto gratuito · El correo de confirmación está limitado a las direcciones autorizadas del equipo.',
             style: TextStyle(fontSize: 12, height: 1.5),
@@ -526,9 +517,11 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     if (auth.stage == AuthStage.ready && AppConfig.isConfigured) {
+      final reports = SupabaseReportRepository(Supabase.instance.client);
       return CitizenHome(
         auth: auth,
-        repository: SupabaseReportRepository(Supabase.instance.client),
+        repository: reports,
+        geocode: ReportAddressSearch(reports).search,
         profileBuilder: profileForm,
       );
     }
@@ -543,9 +536,15 @@ class _AuthScreenState extends State<AuthScreen> {
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => setState(() {
-                  welcomed = false;
-                  register = false;
-                  forgot = false;
+                  if (register || forgot) {
+                    register = false;
+                    forgot = false;
+                  } else {
+                    welcomed = false;
+                  }
+                  password.clear();
+                  repeat.clear();
+                  auth.clearMessage();
                 }),
               )
             : null,
@@ -559,46 +558,30 @@ class _AuthScreenState extends State<AuthScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (auth.stage == AuthStage.signedOut) ...[
-                    const CitizenBrand(),
+                  if (auth.stage == AuthStage.signedOut ||
+                      auth.stage == AuthStage.recovery) ...[
+                    Image.asset(
+                      'assets/renewal/auth/${auth.stage == AuthStage.recovery
+                          ? 'reset'
+                          : forgot
+                          ? 'recovery'
+                          : register
+                          ? 'people'
+                          : 'lock'}.webp',
+                      height: register ? 160 : 190,
+                      fit: BoxFit.contain,
+                      excludeFromSemantics: true,
+                    ),
                     const SizedBox(height: 16),
                     const Text(
-                      'Inicia sesión o crea tu cuenta',
+                      'Ciudad Segura',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: muted, fontSize: 12),
-                    ),
-                    const SizedBox(height: 24),
-                    if (!forgot)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: register
-                                ? TextButton(
-                                    onPressed: () =>
-                                        setState(() => register = false),
-                                    child: const Text('Iniciar sesión'),
-                                  )
-                                : FilledButton(
-                                    onPressed: () {},
-                                    child: const Text('Iniciar sesión'),
-                                  ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: register
-                                ? FilledButton(
-                                    onPressed: () {},
-                                    child: const Text('Registrarse'),
-                                  )
-                                : OutlinedButton(
-                                    onPressed: () =>
-                                        setState(() => register = true),
-                                    child: const Text('Registrarse'),
-                                  ),
-                          ),
-                        ],
+                      style: TextStyle(
+                        color: navy,
+                        fontWeight: FontWeight.w800,
                       ),
-                    const SizedBox(height: 24),
+                    ),
+                    const SizedBox(height: 20),
                   ],
                   Form(
                     key: form,

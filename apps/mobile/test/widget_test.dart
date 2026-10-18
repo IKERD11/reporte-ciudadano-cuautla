@@ -14,7 +14,8 @@ void main() {
     await tester.ensureVisible(find.text('Comenzar'));
     await tester.tap(find.text('Comenzar'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Registrarse'));
+    await tester.ensureVisible(find.text('Soy nuevo · Crear una cuenta'));
+    await tester.tap(find.text('Soy nuevo · Crear una cuenta'));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byType(TextFormField).at(0),
@@ -40,12 +41,8 @@ void main() {
     await tester.pumpWidget(CitizenApp(controller: AuthController(repository)));
     await tester.pumpAndSettle();
     expect(find.text('Ana Pérez'), findsOneWidget);
-    expect(
-      find.text('Pendiente · INE real deshabilitada'),
-      findsOneWidget,
-    );
+    expect(find.text('Pendiente · INE real deshabilitada'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await repository.events.close();
   });
 }
-

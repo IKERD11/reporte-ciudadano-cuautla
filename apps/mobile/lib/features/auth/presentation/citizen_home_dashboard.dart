@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../core/citizen_sticker.dart';
 
-/// The light dashboard is scoped to home; report and account flows keep their theme.
 class CitizenHomeDashboard extends StatelessWidget {
   const CitizenHomeDashboard({
     super.key,
@@ -21,237 +21,264 @@ class CitizenHomeDashboard extends StatelessWidget {
       onReports,
       onNotifications,
       onHelp;
-  static const ink = Color(0xff092254);
+  static const ink = Color(0xff092b60);
 
   Widget tile(
     String title,
     String subtitle,
-    IconData icon,
+    String sticker,
     List<Color> colors,
     VoidCallback onTap, {
     bool large = false,
     Color foreground = ink,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: Ink(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: colors,
-          ),
-          borderRadius: BorderRadius.circular(26),
-          border: Border.all(color: Colors.white.withValues(alpha: .8)),
+  }) => Material(
+    color: Colors.transparent,
+    elevation: large ? 6 : 0,
+    shadowColor: colors.last.withValues(alpha: .2),
+    borderRadius: BorderRadius.circular(large ? 24 : 21),
+    clipBehavior: Clip.antiAlias,
+    child: Ink(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: colors,
         ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(26),
-          child: Padding(
-            padding: EdgeInsets.all(large ? 18 : 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: .22),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Icon(icon, size: large ? 38 : 30, color: foreground),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: foreground,
-                    fontSize: large ? 18 : 15,
-                    fontWeight: FontWeight.w800,
-                    height: 1.15,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: foreground,
-                    fontSize: large ? 14 : 12,
-                    height: 1.35,
-                  ),
-                ),
-                if (large) ...[
-                  const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: CircleAvatar(
-                      radius: 17,
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 22,
-                        color: colors.last,
-                      ),
+        borderRadius: BorderRadius.circular(large ? 24 : 21),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Stack(
+            children: [
+              if (large)
+                Positioned(
+                  top: -30,
+                  right: -24,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: .13),
                     ),
                   ),
-                ],
+                ),
+              ConstrainedBox(
+                constraints: BoxConstraints(minHeight: large ? 181 : 135),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: large ? 17 : 12,
+                    vertical: large ? 21 : 16,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CitizenSticker(sticker, size: large ? 58 : 48),
+                      SizedBox(height: large ? 7 : 11),
+                      Text(
+                        title,
+                        style: TextStyle(
+                          color: large ? foreground : ink,
+                          fontSize: large ? 16 : 12,
+                          fontWeight: FontWeight.w800,
+                          height: 1.18,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          color: foreground,
+                          fontSize: large ? 11 : 9,
+                          fontWeight: large ? FontWeight.w500 : FontWeight.w600,
+                          height: large ? 1.35 : 1.25,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (large)
+                Positioned(
+                  right: 13,
+                  bottom: 13,
+                  child: CircleAvatar(
+                    radius: 17.5,
+                    backgroundColor: Colors.white,
+                    child: Icon(
+                      Icons.chevron_right,
+                      size: 19,
+                      color: colors.last,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) => ColoredBox(
+    color: const Color(0xfff8fcfe),
+    child: ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        LayoutBuilder(
+          builder: (context, constraints) => SizedBox(
+            height: (constraints.maxWidth * .5 + 34).clamp(220, 300),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.asset(
+                  'assets/renewal/cuautla-cityscape-header.webp',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                  excludeFromSemantics: true,
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(25, 29, 25, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: onMenu,
+                            tooltip: 'Abrir menú',
+                            padding: EdgeInsets.zero,
+                            icon: const CitizenSticker(
+                              'shield-header',
+                              size: 46,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'MUNICIPIO DE CUAUTLA',
+                                  style: TextStyle(
+                                    color: Color(0xff24728b),
+                                    fontSize: 8,
+                                    letterSpacing: .8,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                Text(
+                                  'Cuautla Segura',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: ink,
+                                    fontSize: 19,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -.6,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: onNotifications,
+                            tooltip: 'Notificaciones',
+                            icon: Badge(
+                              isLabelVisible: unread > 0,
+                              label: Text(unread > 99 ? '99+' : '$unread'),
+                              child: const CitizenSticker(
+                                'bell-header',
+                                size: 30,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 28),
+                      Text(
+                        'Hola, $name',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: ink,
+                          fontSize: 29,
+                          fontWeight: FontWeight.w800,
+                          height: 1.1,
+                          letterSpacing: -1,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      const Text(
+                        'Tu voz mejora nuestra ciudad',
+                        style: TextStyle(
+                          color: ink,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          height: 1.25,
+                          letterSpacing: -.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) => ColoredBox(
-    color: const Color(0xffedf9ff),
-    child: ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        Stack(
-          children: [
-            Positioned.fill(
-              child: Image.asset(
-                'assets/branding/city-home.png',
-                fit: BoxFit.cover,
-                alignment: Alignment.centerRight,
-              ),
-            ),
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      const Color(0xffb9edff).withValues(alpha: .4),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 110),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        onPressed: onMenu,
-                        tooltip: 'Abrir menú',
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.white.withValues(alpha: .85),
-                        ),
-                        icon: const Icon(
-                          Icons.shield_outlined,
-                          color: Color(0xff00ad88),
-                          size: 30,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'Reporte Ciudadano',
-                          style: TextStyle(
-                            color: ink,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 19,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: onNotifications,
-                        tooltip: 'Notificaciones',
-                        icon: Badge(
-                          isLabelVisible: unread > 0,
-                          label: Text(unread > 99 ? '99+' : '$unread'),
-                          child: const Icon(
-                            Icons.notifications_rounded,
-                            color: ink,
-                            size: 30,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 28),
-                  Text(
-                    'Hola, $name',
-                    style: const TextStyle(
-                      color: ink,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 34,
-                      height: 1.1,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Tu voz también\nconstruye una mejor ciudad',
-                    style: TextStyle(
-                      color: ink,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 20,
-                      height: 1.2,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
         Transform.translate(
-          offset: const Offset(0, -28),
+          offset: const Offset(0, -34),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               children: [
                 Material(
                   color: Colors.white,
                   elevation: 8,
-                  shadowColor: const Color(0xffb6dcef).withValues(alpha: .3),
-                  borderRadius: BorderRadius.circular(24),
+                  shadowColor: const Color(0x33125c8d),
+                  borderRadius: BorderRadius.circular(22),
                   child: InkWell(
                     onTap: onMap,
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(22),
                     child: const Padding(
-                      padding: EdgeInsets.all(20),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 17,
+                        vertical: 14,
+                      ),
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.location_on_rounded,
-                            color: Color(0xff0961d8),
-                            size: 42,
-                          ),
-                          SizedBox(width: 16),
+                          CitizenSticker('pin', size: 53),
+                          SizedBox(width: 13),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Municipio del piloto',
+                                  'Tu ubicación',
                                   style: TextStyle(
-                                    color: Color(0xff52759c),
-                                    fontSize: 14,
+                                    color: Color(0xff6a82a0),
+                                    fontSize: 12,
                                   ),
                                 ),
-                                SizedBox(height: 4),
+                                SizedBox(height: 3),
                                 Text(
                                   'Cuautla, Morelos',
                                   style: TextStyle(
                                     color: ink,
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 20,
+                                    fontSize: 17,
                                   ),
                                 ),
                               ],
                             ),
                           ),
                           Icon(
-                            Icons.chevron_right_rounded,
-                            color: Color(0xff0860ed),
-                            size: 28,
+                            Icons.chevron_right,
+                            color: Color(0xff095bc5),
+                            size: 22,
                           ),
                         ],
                       ),
@@ -265,10 +292,10 @@ class CitizenHomeDashboard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: tile(
-                          'Reportar incidente',
-                          'Haz un reporte rápido',
-                          Icons.campaign_rounded,
-                          const [Color(0xffff8580), Color(0xffff315a)],
+                          'Realizar reporte',
+                          'Comparte lo que ves',
+                          'megaphone-white',
+                          const [Color(0xffff645f), Color(0xfffb274f)],
                           onReport,
                           large: true,
                           foreground: Colors.white,
@@ -277,10 +304,10 @@ class CitizenHomeDashboard extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: tile(
-                          'Mapa de incidentes',
-                          'Consulta tus reportes',
-                          Icons.map_rounded,
-                          const [Color(0xff42c8ff), Color(0xff2764ff)],
+                          'Mapa de reportes',
+                          'Consulta en tu zona',
+                          'map-white',
+                          const [Color(0xff26b6ed), Color(0xff1769ea)],
                           onMap,
                           large: true,
                           foreground: Colors.white,
@@ -289,7 +316,7 @@ class CitizenHomeDashboard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 15),
                 IntrinsicHeight(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -298,55 +325,36 @@ class CitizenHomeDashboard extends StatelessWidget {
                         child: tile(
                           'Mis reportes',
                           'Ver seguimiento',
-                          Icons.assignment_rounded,
-                          const [Color(0xffc7ffed), Color(0xffa9f5df)],
+                          'reports',
+                          const [Color(0xffc8f8e7), Color(0xffaff0dc)],
                           onReports,
+                          foreground: const Color(0xff00785c),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 9),
                       Expanded(
                         child: tile(
-                          'Avisos',
-                          'De tus reportes',
-                          Icons.notifications_active_rounded,
-                          const [Color(0xffede4ff), Color(0xffded4ff)],
+                          'Alertas',
+                          'De tu comunidad',
+                          'bell',
+                          const [Color(0xffeee7ff), Color(0xffddd0fb)],
                           onNotifications,
+                          foreground: const Color(0xff6534cf),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 9),
                       Expanded(
                         child: tile(
-                          'Ayuda',
-                          'Información del piloto',
-                          Icons.support_agent_rounded,
-                          const [Color(0xfffff2b7), Color(0xffffe798)],
+                          'Emergencias',
+                          'Llama o envía SOS',
+                          'emergency',
+                          const [Color(0xfffff4c6), Color(0xffffe8a4)],
                           onHelp,
+                          foreground: const Color(0xffa65b00),
                         ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 18),
-                const Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.science_outlined,
-                      size: 18,
-                      color: Color(0xff52759c),
-                    ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'PRUEBA PILOTO · Sin atención municipal real.\nNo sustituye a los servicios de emergencia.',
-                        style: TextStyle(
-                          color: Color(0xff52759c),
-                          fontSize: 12,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),

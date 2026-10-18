@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 
-const navy = Color(0xffe9e0ff);
-const green = Color(0xff35ba78);
-const muted = Color(0xffb1add0);
+const navy = Color(0xff092b60);
+const green = Color(0xff05af7c);
+const muted = Color(0xff627b9c);
 
-const citizenBackground = Color(0xff090b22);
-const citizenSurface = Color(0xff171337);
-const citizenAccent = Color(0xff9b29ff);
-const citizenBorder = Color(0xff39305f);
+const citizenBackground = Color(0xfff8fcfe);
+const citizenSurface = Color(0xffffffff);
+const citizenAccent = Color(0xff1769ea);
+const citizenBorder = Color(0xffdce8f3);
 ThemeData citizenTheme() {
   final scheme =
       ColorScheme.fromSeed(
         seedColor: citizenAccent,
-        brightness: Brightness.dark,
+        brightness: Brightness.light,
       ).copyWith(
-        primary: const Color(0xffbb86ff),
-        secondary: const Color(0xff6ee7c0),
+        primary: const Color(0xff1769ea),
+        secondary: const Color(0xff05af7c),
         surface: citizenSurface,
-        onSurface: const Color(0xfff2eeff),
+        onSurface: const Color(0xff092b60),
       );
   final round = RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(18),
@@ -25,31 +25,33 @@ ThemeData citizenTheme() {
   );
   return ThemeData(
     useMaterial3: true,
-    brightness: Brightness.dark,
+    fontFamily: 'Manrope',
+    brightness: Brightness.light,
     colorScheme: scheme,
     scaffoldBackgroundColor: citizenBackground,
     appBarTheme: const AppBarTheme(
       backgroundColor: citizenBackground,
-      foregroundColor: Colors.white,
+      foregroundColor: navy,
       centerTitle: true,
       elevation: 0,
       scrolledUnderElevation: 0,
       titleTextStyle: TextStyle(
-        color: Colors.white,
+        fontFamily: 'Manrope',
+        color: navy,
         fontSize: 17,
         fontWeight: FontWeight.w600,
       ),
-      toolbarTextStyle: TextStyle(color: Colors.white),
+      toolbarTextStyle: TextStyle(color: navy),
     ),
     textTheme: const TextTheme(
-      bodyMedium: TextStyle(color: Color(0xffeeeaff), height: 1.5),
+      bodyMedium: TextStyle(color: Color(0xff173967), height: 1.5),
       bodySmall: TextStyle(color: muted, height: 1.4),
       titleLarge: TextStyle(
-        color: Colors.white,
+        color: navy,
         fontSize: 22,
         fontWeight: FontWeight.w700,
       ),
-    ),
+    ).apply(fontFamily: 'Manrope'),
     cardTheme: CardThemeData(
       color: citizenSurface,
       elevation: 0,
@@ -69,7 +71,7 @@ ThemeData citizenTheme() {
       fillColor: citizenSurface,
       labelStyle: const TextStyle(color: muted),
       hintStyle: const TextStyle(color: muted),
-      prefixIconColor: const Color(0xffd5bcff),
+      prefixIconColor: const Color(0xff1769ea),
       contentPadding: const EdgeInsets.all(18),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
@@ -95,26 +97,26 @@ ThemeData citizenTheme() {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(0, 48),
-        foregroundColor: const Color(0xffd4b7ff),
+        foregroundColor: const Color(0xff075ed9),
         side: const BorderSide(color: citizenBorder),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       ),
     ),
     chipTheme: ChipThemeData(
       backgroundColor: citizenSurface,
-      selectedColor: const Color(0xff6429bb),
+      selectedColor: const Color(0xffddd0fb),
       side: const BorderSide(color: citizenBorder),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: const Color(0xff100e2b),
+      backgroundColor: const Color(0xffffffff),
       surfaceTintColor: Colors.transparent,
-      indicatorColor: const Color(0xff4b237e),
+      indicatorColor: const Color(0xffe4f4fd),
       labelTextStyle: WidgetStateProperty.resolveWith(
         (s) => TextStyle(
           fontSize: 11,
           color: s.contains(WidgetState.selected)
-              ? const Color(0xffcfadff)
+              ? const Color(0xff0755d9)
               : muted,
           fontWeight: s.contains(WidgetState.selected)
               ? FontWeight.w700
@@ -135,17 +137,17 @@ class CitizenBrand extends StatelessWidget {
         width: light ? 184 : 128,
         height: light ? 142 : 98,
         child: Image.asset(
-          'assets/branding/logo-violet.png',
+          'assets/renewal/icons/3d/shield.webp',
           fit: BoxFit.contain,
           semanticLabel: 'Logo de Reporte Ciudadano',
         ),
       ),
       const SizedBox(height: 12),
       Text(
-        light ? 'Reporte\nCiudadano' : 'Reporte Ciudadano',
+        'Cuautla Segura',
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: light ? Colors.white : navy,
+          color: navy,
           fontSize: light ? 28 : 19,
           fontWeight: FontWeight.w800,
           height: 1.15,
