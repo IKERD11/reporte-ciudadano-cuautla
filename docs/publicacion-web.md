@@ -9,7 +9,7 @@ El panel requiere una cuenta con permisos; publicar su login no concede acceso
 a reportes. Se mantienen INE reales bloqueadas y la demostración deshabilitada
 en la compilación de producción.
 
-El código fuente de trabajo sigue en el repositorio privado. Los repositorios
+El código fuente de trabajo está en `IKERD11/reporte-ciudadano-cuautla`. El 18 de octubre se comprobó mediante GitHub que ese repositorio está público; la referencia anterior a un repositorio privado estaba desactualizada. No se cambió su visibilidad en esta entrega. Los repositorios
 públicos `IKERD11/reporte-ciudadano-app` y `IKERD11/reporte-ciudadano-dashboard`
 contienen los archivos compilados que descarga el navegador, no respaldos,
 evidencias, sesiones ni claves de servidor. La clave publicable de Supabase
@@ -90,3 +90,16 @@ y base de datos continúa pendiente.
 Referencias: [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages),
 [exportación Next.js](https://nextjs.org/docs/app/guides/static-exports),
 [retornos Supabase](https://supabase.com/docs/guides/auth/redirect-urls).
+
+
+## Actualización del 18 de octubre de 2026
+
+Se publica la renovación ciudadana y MapLibre GL JS con OpenFreeMap, sin claves ni facturación. La búsqueda queda conectada al servicio autenticado `report-pilot`, acción `geocode`, existente; conserva Nominatim, caché y límites globales del piloto. No se redeployó el backend ni se modificaron cuentas o políticas.
+
+Validación: 34 pruebas Flutter, 3 pruebas del normalizador del servidor y análisis sin incidencias; compilación de producción con base y retorno públicos correctos. La consulta aislada de un parque público de Cuautla devolvió un candidato real. CORS del sitio público responde 204, origen ajeno 403 y solicitud sin sesión 401. No equivale a una validación autenticada del buscador.
+
+GitHub Pages publicó el commit inicial `8200735` con éxito. Los archivos HTML, JavaScript de Flutter, puente y CSS de MapLibre, biblioteca y nueva ilustración respondieron HTTP 200 y coincidieron con la compilación, normalizando únicamente finales de línea de Git para archivos de texto.
+
+La revisión en un navegador que había abierto la app anterior detectó un arranque desde caché. Se versionan las URLs de bootstrap, entrada Dart y puente/CSS del mapa con el token único generado por Flutter, conservando la caché dentro de una misma entrega. No se borran sesiones, cachés de otras aplicaciones ni datos del navegador. Cada futura publicación debe compilar de nuevo; no reutilizar el bootstrap de una entrega anterior.
+
+Código preparado en https://github.com/IKERD11/reporte-ciudadano-cuautla/pull/1 . El recorrido con una sesión real y GPS en teléfono físico siguen pendientes de intervención del propietario. No sustituir esas comprobaciones con GPS simulado o acceso administrativo.
