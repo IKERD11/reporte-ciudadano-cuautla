@@ -260,16 +260,12 @@ class CitizenProfileDesign extends StatelessWidget {
           children: [
             row(
               'Mis reportes',
-              const CitizenSticker('reports', size: 42),
+              const ProfileMenuIcon(column: 0, row: 0),
               onTap: onReports,
             ),
             row(
               'Notificaciones',
-              const Icon(
-                Icons.notifications_none,
-                size: 24,
-                color: Color(0xff0d4fa7),
-              ),
+              const ProfileMenuIcon(column: 1, row: 0),
               trailing: Semantics(
                 toggled: notifications,
                 label: 'Activar o desactivar notificaciones',
@@ -326,30 +322,22 @@ class CitizenProfileDesign extends StatelessWidget {
             ),
             row(
               'Ubicación',
-              const CitizenSticker('pin', size: 42),
+              const ProfileMenuIcon(column: 2, row: 0),
               onTap: onLocation,
             ),
             row(
               'Privacidad',
-              const Icon(
-                Icons.lock_outline,
-                size: 24,
-                color: Color(0xff0d4fa7),
-              ),
+              const ProfileMenuIcon(column: 0, row: 1),
               onTap: onPrivacy,
             ),
             row(
               'Ayuda y soporte',
-              const Icon(
-                Icons.help_outline,
-                size: 25,
-                color: Color(0xff0d4fa7),
-              ),
+              const ProfileMenuIcon(column: 1, row: 1),
               onTap: onHelp,
             ),
             row(
               'Cerrar sesión',
-              const Icon(Icons.logout, size: 26, color: Color(0xffff304a)),
+              const ProfileMenuIcon(column: 2, row: 1),
               onTap: onLogout,
               last: true,
             ),
@@ -357,5 +345,32 @@ class CitizenProfileDesign extends StatelessWidget {
         ),
       ),
     ],
+  );
+}
+
+/// The original six-cell profile artwork: three columns, two rows.
+/// Crop at paint time so the source, transparent edges and proportions stay intact.
+class ProfileMenuIcon extends StatelessWidget {
+  const ProfileMenuIcon({super.key, required this.column, required this.row});
+  final int column, row;
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: 43,
+    child: ClipRect(
+      child: OverflowBox(
+        alignment: Alignment((column - 1).toDouble(), (row * 2 - 1).toDouble()),
+        minWidth: 129,
+        maxWidth: 129,
+        minHeight: 86,
+        maxHeight: 86,
+        child: Image.asset(
+          'assets/renewal/icons/3d/profile-menu.png',
+          width: 129,
+          height: 86,
+          fit: BoxFit.fill,
+          excludeFromSemantics: true,
+        ),
+      ),
+    ),
   );
 }

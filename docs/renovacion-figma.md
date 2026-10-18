@@ -47,3 +47,10 @@ Se conservaron los cambios locales anteriores y se sincronizaron los recursos in
 Validación: 28 pruebas Flutter aprobadas, incluida bienvenida a 320, 390 y 1280 px y validación del registro. Estas pruebas usan datos simulados y no acreditan entrega de correo ni GPS real.
 
 Revisión adicional: capturas locales `output/figma-renovacion/zip-bienvenida.png`, `zip-acceso.png`, `zip-registro.png` y `zip-recuperacion.png`, generadas con fuentes e imágenes reales y cuenta simulada. Análisis completo de Flutter sin incidencias.
+
+
+## Corrección de iconos de Mi perfil — 18 de octubre de 2026
+
+Se conectan las seis celdas originales de `profile-menu.png` al menú mediante recorte de la imagen en Flutter: reportes, notificaciones, ubicación, privacidad, ayuda y salida. Se conserva el espacio de 43 × 43 px del diseño, con la disposición original de tres columnas y dos filas. No se regeneran ni sustituyen los dibujos del ZIP. Se mantienen etiquetas, tarjetas, medidas, interruptor, navegación y callbacks.
+
+Análisis sin incidencias, dos pruebas existentes de navegación/perfil aprobadas y revisión visual a 390 × 844 px con datos sintéticos. La captura local `output/figma-renovacion/perfil-iconos-3d.png` acredita los seis recortes visibles; no representa una sesión real.
