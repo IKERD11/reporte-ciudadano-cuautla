@@ -37,3 +37,7 @@ El responsable debe cumplir la [política de Nominatim](https://operations.osmfo
 ## Entrega del 16 de octubre
 
 Código, migraciones, pruebas, atlas histórico y PDF subidos al repositorio privado en `af8797a`. Se añadió el [procedimiento de respaldo y restauración](respaldo-restauracion.md); el ensayo sigue pendiente por falta del motor Docker local. No se activó facturación, publicación de aplicaciones ni acceso a INE reales.
+
+## Publicación del 17 de octubre
+
+App y panel publicados en GitHub Pages con HTTPS; configuración Auth y CORS actualizada. Este hecho sustituye el pendiente de publicación indicado arriba. Ver [evidencia y límites](publicacion-web.md). No sustituye pruebas autenticadas, GPS real ni entrega de correo. CI de pruebas sigue pendiente.

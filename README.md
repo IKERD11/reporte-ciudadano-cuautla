@@ -1,16 +1,23 @@
 # Reporte Ciudadano
 
+## Sitios de prueba
+
+- [App ciudadana](https://ikerd11.github.io/reporte-ciudadano-app/)
+- [Panel administrativo](https://ikerd11.github.io/reporte-ciudadano-dashboard/) — requiere cuenta autorizada.
+
+[Publicación, actualización y límites](docs/publicacion-web.md).
+
 ## Diagramas del proyecto
 
 Consultar el [atlas técnico de 55 diagramas](docs/diagramas/README.md): arquitectura, UML de clases/secuencias/estados, casos de uso, actividades, navegación y modelo entidad-relación. Incluye 25 fichas de tablas, fuentes Mermaid, SVG y un visor HTML sin conexión. Basado en el código y las migraciones; distingue el piloto implementado de las funciones pendientes.
 
 **Colaboradores:** empezar por [CONTRIBUTING.md](CONTRIBUTING.md), con instalación, configuración, pruebas y reglas del piloto. Las notificaciones de fase 6 están documentadas en [fase 6](docs/fase-6-notificaciones.md).
 
-Estado actualizado al 16 de octubre: [lista de pendientes](PENDIENTES.txt) y [registro de comprobaciones](docs/cierre-piloto-2026-10-15.md).
+Estado actualizado al 17 de octubre: [lista de pendientes](PENDIENTES.txt) y [registro de comprobaciones](docs/cierre-piloto-2026-10-15.md).
 
 ## Qué falta desarrollar, corregir o retirar
 
-**Actualizado al 16 de octubre de 2026:** consultar [PENDIENTES.txt](PENDIENTES.txt) para la lista de entrega y [evidencia de validación](docs/cierre-piloto-2026-10-15.md) para distinguir lo probado de lo pendiente. El sistema sigue en modalidad piloto; el alcance actual es web.
+**Actualizado al 17 de octubre de 2026:** consultar [PENDIENTES.txt](PENDIENTES.txt) para la lista de entrega y [evidencia de validación](docs/cierre-piloto-2026-10-15.md) para distinguir lo probado de lo pendiente. El sistema sigue en modalidad piloto; el alcance actual es web.
 
 **Implementado:** reportes y avisos internos, búsqueda explícita por dirección con candidatos y marcador, administración de roles municipales existentes, auditoría y exportación CSV filtrada hasta 5,000 registros. También se corrigieron filtros de fechas, textos de notificaciones y acceso a demostración en producción. El procedimiento de respaldo está documentado, pero aún no se ha ensayado.
 
@@ -19,7 +26,7 @@ Estado actualizado al 16 de octubre: [lista de pendientes](PENDIENTES.txt) y [re
 - Comprobar GPS real, permisos y búsqueda autenticada con direcciones públicas de Cuautla. Las pruebas simuladas no sustituyen esta validación.
 - Completar el recorrido en navegador ciudadano → administración → aviso, y revisar accesibilidad, tamaños, teclado, mapas, métricas y filtros con datos representativos.
 - Reconstruir una base local limpia y ensayar respaldo/restauración, incluidos archivos de Storage. Docker local sigue sin estar disponible; nunca ejecutar un reset remoto.
-- Publicar app y panel con costo cero, verificar configuración de autenticación y seguridad, y activar CI. Solo el atlas está publicado; CI sigue como plantilla.
+- Validar el recorrido autenticado y correo en los sitios públicos. App y panel ya están publicados con HTTPS; configuración aplicada y límites en [publicación web](docs/publicacion-web.md). CI de pruebas sigue como plantilla.
 - Actualizar atlas/PDF con geocodificación, caché y roles; revisar textos, enlaces y recursos antiguos sin eliminar pruebas o documentación útil.
 - Revisar los avisos de seguridad conocidos: protección de contraseñas filtradas desactivada y denegación intencional de acceso directo a cuatro tablas privadas. No ampliar permisos para silenciar avisos.
 

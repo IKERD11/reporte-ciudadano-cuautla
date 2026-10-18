@@ -2,7 +2,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 import {normalizePhoto, readBody, PilotError, uuid} from './validation.ts';
 import {searchUrl,searchResults} from './geocoding.ts';
 const admin=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
-const origins=new Set(['http://localhost:3000','http://127.0.0.1:3000']);
+const origins=new Set(['http://localhost:3000','http://127.0.0.1:3000','https://ikerd11.github.io']);
 Deno.serve(async request=>{
  const origin=request.headers.get('origin');
  const headers:Record<string,string>={'Content-Type':'application/json','Cache-Control':'no-store','Vary':'Origin','Access-Control-Allow-Headers':'authorization,apikey,content-type,x-client-info','Access-Control-Allow-Methods':'POST,OPTIONS'};

@@ -1,5 +1,5 @@
 REPORTE CIUDADANO — ESTADO Y PENDIENTES
-Actualizado: 16 de octubre de 2026
+Actualizado: 17 de octubre de 2026
 Piloto: Cuautla, Morelos. Costo cero. Alcance actual: versión web.
 
 1. IMPLEMENTADO (NO VOLVER A LISTAR COMO DESARROLLO PENDIENTE)
@@ -40,9 +40,9 @@ Piloto: Cuautla, Morelos. Costo cero. Alcance actual: versión web.
 [ ] Ensayar respaldo y restauración local, incluyendo archivos de Storage.
     El procedimiento existe en docs/respaldo-restauracion.md; no equivale
     a un respaldo creado ni a una restauración comprobada.
-[ ] Configurar publicación de la app ciudadana y del panel sin activar pagos;
-    comprobar dominios, recuperación de cuenta, redirecciones y configuración
-    de seguridad. Solo el atlas de diagramas está publicado actualmente.
+[x] App y panel publicados con HTTPS en GitHub Pages, sin activar pagos.
+    Retorno de Supabase y CORS configurados. Detalle: docs/publicacion-web.md.
+[ ] Comprobar el recorrido autenticado y entrega de correo en los sitios públicos.
 [ ] Activar y comprobar la integración continua. La plantilla sigue en
     docs/ci/; todavía no está habilitada como workflow de GitHub.
 [ ] Revisar seguridad al desplegar y documentar los avisos pendientes:

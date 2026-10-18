@@ -19,3 +19,4 @@ key.properties
 __pycache__/
 tmp/
 backups/
+apps/admin/out/

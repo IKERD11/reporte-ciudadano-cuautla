@@ -4,7 +4,7 @@ import { PilotError, uuid, validateSynthetic, readLimitedBody, DisabledOcrProvid
 const url = Deno.env.get('SUPABASE_URL')!;
 const secret = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const admin = createClient(url, secret, { auth: { persistSession: false, autoRefreshToken: false } });
-const origins = new Set(['http://localhost:3000', 'http://127.0.0.1:3000']);
+const origins = new Set(['http://localhost:3000', 'http://127.0.0.1:3000', 'https://ikerd11.github.io']);
 const actions = new Set(['context','begin','upload','submit','read','approve_demo','reject']);
 Deno.serve(async (request) => {
   const origin = request.headers.get('origin');
