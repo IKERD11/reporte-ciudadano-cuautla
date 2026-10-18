@@ -106,3 +106,8 @@ La revisión en un navegador que había abierto la app anterior detectó un arra
 Código preparado en https://github.com/IKERD11/reporte-ciudadano-cuautla/pull/1 . El recorrido con una sesión real y GPS en teléfono físico siguen pendientes de intervención del propietario. No sustituir esas comprobaciones con GPS simulado o acceso administrativo.
 
 El empaquetado `scripts/package-citizen-web.mjs` añade además nombres basados en el hash del contenido a la entrada Dart, bootstrap y puente/CSS del mapa. El HTML referencia esos nombres nuevos, de modo que tampoco se reutiliza un bootstrap antiguo durante publicaciones sucesivas próximas. Ejecutar este paso después de cada compilación de producción. Los archivos canónicos se conservan para compatibilidad con clientes anteriores.
+
+
+Entrega final comprobada: commit de publicación `a9037e5`, despliegue Pages `39164305221` completado con éxito. HTML, entrada Dart y bootstrap/puente/CSS con nombres versionados responden HTTP 200 y coinciden con el paquete local tras normalizar finales de línea de texto. La pestaña que inicialmente mostraba el diseño antiguo pasó a mostrar la bienvenida nueva y el acceso, sin borrar datos ni cambiar permisos del navegador. Captura local: `output/figma-renovacion/publicacion-acceso-2026-10-18.jpg`.
+
+Se dejó abierta la pantalla de acceso para que el propietario inicie sesión. No hay una sesión autenticada disponible en el navegador conectado ni acceso a un teléfono físico; las comprobaciones de búsqueda dentro de la cuenta, creación/consulta autenticada y GPS real no se declaran terminadas. No se solicitaron contraseñas por chat ni se crearon cuentas sustitutas.
