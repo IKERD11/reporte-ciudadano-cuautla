@@ -34,6 +34,7 @@ Desde `apps/mobile`, con Flutter instalado y `config/pilot.json` local:
 
 ```powershell
 flutter build web --release --base-href=/reporte-ciudadano-app/ --dart-define-from-file=config/pilot.json --dart-define=AUTH_REDIRECT_URL=https://ikerd11.github.io/reporte-ciudadano-app/
+node ../../scripts/package-citizen-web.mjs build/web
 ```
 
 Desde `apps/admin`, con dependencias instaladas y `.env.local` que contenga
@@ -103,3 +104,5 @@ GitHub Pages publicó el commit inicial `8200735` con éxito. Los archivos HTML,
 La revisión en un navegador que había abierto la app anterior detectó un arranque desde caché. Se versionan las URLs de bootstrap, entrada Dart y puente/CSS del mapa con el token único generado por Flutter, conservando la caché dentro de una misma entrega. No se borran sesiones, cachés de otras aplicaciones ni datos del navegador. Cada futura publicación debe compilar de nuevo; no reutilizar el bootstrap de una entrega anterior.
 
 Código preparado en https://github.com/IKERD11/reporte-ciudadano-cuautla/pull/1 . El recorrido con una sesión real y GPS en teléfono físico siguen pendientes de intervención del propietario. No sustituir esas comprobaciones con GPS simulado o acceso administrativo.
+
+El empaquetado `scripts/package-citizen-web.mjs` añade además nombres basados en el hash del contenido a la entrada Dart, bootstrap y puente/CSS del mapa. El HTML referencia esos nombres nuevos, de modo que tampoco se reutiliza un bootstrap antiguo durante publicaciones sucesivas próximas. Ejecutar este paso después de cada compilación de producción. Los archivos canónicos se conservan para compatibilidad con clientes anteriores.
