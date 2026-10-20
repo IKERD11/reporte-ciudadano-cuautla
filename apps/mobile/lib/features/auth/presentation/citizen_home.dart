@@ -1,10 +1,17 @@
+import 'zone_screen.dart';
+import '../../../core/zone_storage.dart';
 import 'dart:async';
+import '../../../core/citizen_design.dart';
+import '../../../core/citizen_sticker.dart';
+import '../../../core/address_search.dart';
+import 'package:geolocator/geolocator.dart';
+import '../../reports/report_map.dart';
+import 'citizen_design_screens.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'citizen_home_dashboard.dart';
 import '../../notifications/notifications_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../core/citizen_theme.dart';
 import '../../reports/report_repository.dart';
 import '../../reports/reports_screen.dart';
@@ -16,10 +23,12 @@ class CitizenHome extends StatefulWidget {
     required this.auth,
     required this.repository,
     required this.profileBuilder,
+    this.geocode = searchAddressNotConnected,
   });
   final AuthController auth;
   final ReportRepository repository;
   final Widget Function() profileBuilder;
+  final AddressGeocoder geocode;
   @override
   State<CitizenHome> createState() => _CitizenHomeState();
 }
@@ -31,21 +40,33 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
   String? error;
   List<Map<String, dynamic>> categories = [], points = [];
   bool mapLoaded = false;
-  final mapController = MapController();
+  bool mapCovered = false;
+  bool notificationIndicators = true;
+  bool activityUnreadOnly = false;
+  String mapQuery = "";
+  String mapFilter = "Todos";
+  LatLng? mapFocus;
+  bool searchingMap = false;
+  int mapSearchRequest = 0;
+  final mapCardKey = GlobalKey();
+  double mapCardHeight = 203;
   Map<String, dynamic>? selectedReport;
   late final String actor;
+  CitizenZone zone = const CitizenZone();
+  bool zoneConfigured = false;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     actor = widget.auth.account!.id;
+    zone = CitizenZone.decode(readZone(actor));
+    zoneConfigured = readZone(actor) != null;
     unawaited(load());
     unawaited(refreshUnread());
   }
 
   @override
   void dispose() {
-    mapController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -90,28 +111,33 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
   }
 
   Future<void> notifications() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => NotificationsScreen(
-          repository: widget.repository,
-          auth: widget.auth,
-        ),
-      ),
-    );
-    if (current) await refreshUnread();
+    activityUnreadOnly = unread > 0;
+    await selectTab(5);
   }
 
   Future<void> reports({bool create = false}) async {
+    if (tab == 2) setState(() => mapCovered = true);
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ReportsScreen(
           repository: widget.repository,
           auth: widget.auth,
           initialCreate: create,
+          geocode: widget.geocode,
+          onNavigate: (value) {
+            Navigator.of(context).pop();
+            navigate(value);
+          },
         ),
       ),
     );
-    if (current) await refreshUnread();
+    if (current) {
+      setState(() {
+        mapLoaded = false;
+        mapCovered = false;
+      });
+      await refreshUnread();
+    }
   }
 
   void info(String title, String body) {
@@ -153,7 +179,11 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
         final d = await widget.repository.call('detail', {
           'report_id': r['id'],
         });
-        if (d['latitude'] != null) result.add(d);
+        if (d['latitude'] != null &&
+            d['longitude'] != null &&
+            !isDemonstrationReport(d)) {
+          result.add(d);
+        }
       }
       if (current) {
         setState(() {
@@ -171,92 +201,69 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
   Widget home() => Builder(
     builder: (homeContext) => CitizenHomeDashboard(
       name: widget.auth.profile!.firstName,
-      unread: unread,
+      unread: notificationIndicators ? unread : 0,
       onMenu: () => Scaffold.of(homeContext).openDrawer(),
       onReport: () => reports(create: true),
       onMap: () => selectTab(2),
       onReports: () => selectTab(1),
-      onNotifications: notifications,
-      onHelp: () => info(
-        'Ayuda del piloto',
-        'Consulta tus reportes y sus avisos desde esta aplicación. Las pruebas no envían solicitudes de emergencia ni tienen atención municipal real.',
-      ),
+      onNotifications: () => selectTab(7),
+      onZone: configureZone,
+      onActivity: notifications,
+      zoneAddress: zone.address,
+      onHelp: () => selectTab(6),
     ),
   );
 
-  Widget homeNavigation() => SafeArea(
-    top: false,
-    child: Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+  Future<void> configureZone() async {
+    if (tab == 2) setState(() => mapCovered = true);
+    final value = await Navigator.of(context).push<CitizenZone>(
+      MaterialPageRoute(
+        builder: (_) => ZoneScreen(initial: zone, geocode: widget.geocode),
       ),
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 10),
-      child: Row(
-        children: [
-          for (final entry in [
-            (0, Icons.home_rounded, 'Inicio'),
-            (2, Icons.map_outlined, 'Mapa'),
-            (4, Icons.add, 'Reportar'),
-            (1, Icons.history_rounded, 'Actividad'),
-            (3, Icons.person_rounded, 'Perfil'),
-          ])
-            Expanded(
-              child: Semantics(
-                selected: entry.$1 == 0,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () => entry.$1 == 4
-                      ? reports(create: true)
-                      : selectTab(entry.$1),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (entry.$1 == 4)
-                          const CircleAvatar(
-                            radius: 25,
-                            backgroundColor: Color(0xff00b995),
-                            child: Icon(
-                              Icons.add,
-                              color: Colors.white,
-                              size: 34,
-                            ),
-                          )
-                        else
-                          Icon(
-                            entry.$2,
-                            size: 28,
-                            color: entry.$1 == 0
-                                ? const Color(0xff0755d9)
-                                : const Color(0xff6387af),
-                          ),
-                        const SizedBox(height: 4),
-                        Text(
-                          entry.$3,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: entry.$1 == 0
-                                ? const Color(0xff0755d9)
-                                : const Color(0xff52759c),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+    );
+    if (!current) return;
+    if (value != null) {
+      try {
+        writeZone(actor, value.encode());
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('La zona se conservará solo durante esta sesión.'),
             ),
-        ],
-      ),
-    ),
+          );
+        }
+      }
+    }
+    setState(() {
+      mapCovered = false;
+      if (value != null) {
+        zone = value;
+        zoneConfigured = true;
+        mapFocus = value.point;
+        selectedReport = null;
+      }
+    });
+  }
+
+  void navigate(int value) {
+    if (value == 5) activityUnreadOnly = false;
+    if (value == 4) {
+      reports(create: true);
+    } else {
+      selectTab(value);
+    }
+  }
+
+  Widget homeNavigation() => DesignNavigation(
+    unread: notificationIndicators ? unread : 0,
+    active: tab == 1 || tab == 6 || tab == 7 ? 0 : tab,
+    onSelected: navigate,
   );
   Widget reportPreview(Map<String, dynamic> report) {
     final images = report['images'] as List? ?? [];
     return Material(
-      color: const Color(0xff191431),
+      color: const Color(0xffffffff),
       elevation: 10,
       shadowColor: Colors.black54,
       borderRadius: BorderRadius.circular(18),
@@ -279,7 +286,7 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
                   )
                 else
                   const ColoredBox(
-                    color: Color(0xff292044),
+                    color: Color(0xffedf5fc),
                     child: Center(
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -300,7 +307,7 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
                   child: IconButton.filled(
                     tooltip: 'Cerrar vista del reporte',
                     style: IconButton.styleFrom(
-                      backgroundColor: const Color(0xcc171337),
+                      backgroundColor: const Color(0xeef8fcfe),
                     ),
                     onPressed: () => setState(() => selectedReport = null),
                     icon: const Icon(Icons.close, size: 16),
@@ -331,7 +338,7 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
                     vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xff37205a),
+                    color: const Color(0xfffff0bd),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -339,7 +346,7 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: Color(0xffd9b8ff),
+                      color: Color(0xff956000),
                       fontSize: 11,
                     ),
                   ),
@@ -352,7 +359,7 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
                   style: const TextStyle(
                     fontSize: 12,
                     height: 1.3,
-                    color: Color(0xffd5cee8),
+                    color: Color(0xff173967),
                   ),
                 ),
               ],
@@ -363,166 +370,344 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
     );
   }
 
-  Widget map() => Column(
-    children: [
-      const Padding(
-        padding: EdgeInsets.all(16),
-        child: Text(
-          'Tus 20 reportes más recientes · Solo visibles para tu cuenta',
-          style: TextStyle(color: muted, fontSize: 12),
+  Future<void> searchMap(String query) async {
+    if (query.trim().isEmpty) return;
+    final request = ++mapSearchRequest;
+    setState(() => searchingMap = true);
+    try {
+      final results = await widget
+          .geocode(query)
+          .timeout(const Duration(seconds: 20));
+      if (request != mapSearchRequest || tab != 2) return;
+      if (!current) return;
+      if (results.isEmpty) {
+        info('Buscar zona', 'No encontramos esa zona.');
+        return;
+      }
+      setState(
+        () => mapFocus = LatLng(
+          (results.first['latitude'] as num).toDouble(),
+          (results.first['longitude'] as num).toDouble(),
         ),
-      ),
-      if (loading) const LinearProgressIndicator(),
-      if (error != null)
-        TextButton(
-          onPressed: () => selectTab(2),
-          child: Text('$error Reintentar'),
+      );
+    } on AddressSearchUnavailable catch (e) {
+      if (current && tab == 2 && request == mapSearchRequest) {
+        info('Buscar zona', e.toString());
+      }
+    } catch (_) {
+      if (current && tab == 2 && request == mapSearchRequest) {
+        info('Buscar zona', 'No fue posible buscar esa zona.');
+      }
+    } finally {
+      if (current && request == mapSearchRequest) {
+        setState(() => searchingMap = false);
+      }
+    }
+  }
+
+  Future<void> locateMap() async {
+    try {
+      final p = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 20),
         ),
-      Expanded(
-        child: FlutterMap(
-          mapController: mapController,
-          options: MapOptions(
-            onTap: (_, _) => setState(() => selectedReport = null),
-            initialCenter: points.isEmpty
-                ? const LatLng(18.812, -98.955)
-                : LatLng(
-                    (points.first['latitude'] as num).toDouble(),
-                    (points.first['longitude'] as num).toDouble(),
-                  ),
-            initialZoom: 13,
+      );
+      if (current) setState(() => mapFocus = LatLng(p.latitude, p.longitude));
+    } catch (_) {
+      if (current) info('Ubicación', 'No fue posible obtener tu ubicación.');
+    }
+  }
+
+  bool mapMatches(Map<String, dynamic> report) {
+    if (zoneConfigured &&
+        report['latitude'] is num &&
+        report['longitude'] is num &&
+        const Distance().as(
+              LengthUnit.Kilometer,
+              zone.point,
+              LatLng(
+                (report['latitude'] as num).toDouble(),
+                (report['longitude'] as num).toDouble(),
+              ),
+            ) >
+            zone.radius) {
+      return false;
+    }
+    final icon = categoryArtwork(
+      '${report['category'] ?? report['description'] ?? ''}',
+    ).$1;
+    return mapFilter == 'Todos' ||
+        (mapFilter == 'Seguridad' &&
+            ['robbery', 'spray', 'users'].contains(icon)) ||
+        (mapFilter == 'Vialidad' && ['car', 'cone'].contains(icon)) ||
+        (mapFilter == 'Servicios' && ['bulb', 'more'].contains(icon)) ||
+        (mapFilter == 'Animales' && icon == 'paw');
+  }
+
+  Widget map() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!current || tab != 2) return;
+      final box = mapCardKey.currentContext?.findRenderObject();
+      if (box is RenderBox &&
+          box.hasSize &&
+          (box.size.height - mapCardHeight).abs() > 1) {
+        setState(() => mapCardHeight = box.size.height);
+      }
+    });
+    return LayoutBuilder(
+      builder: (context, c) => Stack(
+        children: [
+          ReportMap(
+            height: c.maxHeight,
+            radius: 0,
+            zoom: 14,
+            allow3D: true,
+            bottomInset: mapCardHeight,
+            controlTop: 82,
+            reports: points.where(mapMatches).toList(),
+            point: mapFocus ?? zone.point,
+            radiusKm: zoneConfigured ? zone.radius : null,
+            onReportSelected: (r) => setState(() => selectedReport = r),
           ),
-          children: [
-            ColorFiltered(
-              colorFilter: const ColorFilter.matrix([
-                -.7,
-                0,
-                0,
-                0,
-                190,
-                0,
-                -.7,
-                0,
-                0,
-                186,
-                0,
-                0,
-                -.65,
-                0,
-                211,
-                0,
-                0,
-                0,
-                1,
-                0,
-              ]),
-              child: TileLayer(
-                urlTemplate: const String.fromEnvironment(
-                  'MAP_TILE_URL',
-                  defaultValue:
-                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          Positioned(
+            top: 16,
+            left: 18,
+            right: 80,
+            child: PointerInterceptor(
+              child: TextField(
+                onSubmitted: searchMap,
+                onChanged: (v) {
+                  mapQuery = v;
+                  mapSearchRequest++;
+                  if (searchingMap) setState(() => searchingMap = false);
+                },
+                decoration: InputDecoration(
+                  hintText: 'Buscar en esta zona...',
+                  prefixIcon: const Icon(Icons.search, size: 24),
+                  suffixIcon: searchingMap
+                      ? const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : null,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
-                userAgentPackageName: 'mx.reporteciudadano.piloto',
               ),
             ),
-            MarkerLayer(
-              markers: [
-                for (final p in points)
-                  Marker(
-                    point: LatLng(
-                      (p['latitude'] as num).toDouble(),
-                      (p['longitude'] as num).toDouble(),
+          ),
+          Positioned(
+            top: 16,
+            right: 18,
+            child: PointerInterceptor(
+              child: Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                child: PopupMenuButton<String>(
+                  tooltip: 'Filtrar incidentes',
+                  icon: const Icon(Icons.filter_list, size: 25),
+                  onSelected: (v) => setState(() {
+                    mapFilter = v;
+                    selectedReport = null;
+                  }),
+                  itemBuilder: (_) => [
+                    for (final f in [
+                      'Todos',
+                      'Seguridad',
+                      'Vialidad',
+                      'Servicios',
+                      'Animales',
+                    ])
+                      PopupMenuItem(value: f, child: Text(f)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 82,
+            right: 18,
+            child: PointerInterceptor(
+              child: IconButton.filled(
+                tooltip: 'Usar mi ubicación actual',
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xff1769ea),
+                ),
+                onPressed: locateMap,
+                icon: const Icon(Icons.my_location, size: 26),
+              ),
+            ),
+          ),
+          if (loading)
+            const Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: LinearProgressIndicator(),
+            ),
+          if (error != null)
+            Positioned(
+              top: 130,
+              left: 18,
+              right: 18,
+              child: PointerInterceptor(
+                child: TextButton(
+                  onPressed: () => selectTab(2),
+                  child: Text('$error Reintentar'),
+                ),
+              ),
+            ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: PointerInterceptor(
+              child: Container(
+                key: mapCardKey,
+                padding: const EdgeInsets.fromLTRB(19, 18, 19, 14),
+                constraints: const BoxConstraints(minHeight: 203),
+                decoration: const BoxDecoration(
+                  color: Color(0xfffbfdff),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x1a123f65),
+                      blurRadius: 28,
+                      offset: Offset(0, -10),
                     ),
-                    width: 46,
-                    height: 46,
-                    child: IconButton(
-                      tooltip: p['folio'],
-                      onPressed: () {
-                        setState(() => selectedReport = p);
-                        mapController.move(
-                          LatLng(
-                            (p['latitude'] as num).toDouble(),
-                            (p['longitude'] as num).toDouble(),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Incidentes cercanos',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xff082b65),
+                            ),
                           ),
-                          mapController.camera.zoom,
-                          offset: const Offset(0, 100),
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.location_on,
-                        color: Color(0xffab54ff),
-                        size: 38,
+                        ),
+                        TextButton(
+                          onPressed: () => selectTab(1),
+                          child: const Text(
+                            'Ver todos ›',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (selectedReport != null)
+                      reportPreview(selectedReport!)
+                    else if (points.where(mapMatches).isNotEmpty)
+                      Material(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 13,
+                            vertical: 10,
+                          ),
+                          leading: CitizenSticker(
+                            categoryArtwork(
+                              '${points.where(mapMatches).first['category'] ?? points.where(mapMatches).first['description']}',
+                            ).$1,
+                            size: 59,
+                          ),
+                          title: Text(
+                            '${points.where(mapMatches).first['category'] ?? points.where(mapMatches).first['folio']}',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '${points.where(mapMatches).first['address'] ?? ''}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => setState(
+                            () =>
+                                selectedReport = points.where(mapMatches).first,
+                          ),
+                        ),
+                      )
+                    else
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 22),
+                        child: Text(
+                          'Aún no tienes reportes con ubicación en esta zona.',
+                          style: TextStyle(color: muted, fontSize: 12),
+                        ),
                       ),
-                    ),
-                  ),
-              ],
-            ),
-            if (selectedReport != null)
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: LatLng(
-                      (selectedReport!['latitude'] as num).toDouble(),
-                      (selectedReport!['longitude'] as num).toDouble(),
-                    ),
-                    width:
-                        MediaQuery.sizeOf(
-                          context,
-                        ).width.clamp(200, 290).toDouble() -
-                        24,
-                    height: 234,
-                    alignment: Alignment.topCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 28),
-                      child: reportPreview(selectedReport!),
-                    ),
-                  ),
-                ],
-              ),
-            RichAttributionWidget(
-              attributions: [
-                TextSourceAttribution(
-                  '© OpenStreetMap contributors',
-                  onTap: () => launchUrl(
-                    Uri.parse('https://www.openstreetmap.org/copyright'),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-      if (!loading && points.isEmpty)
-        const Padding(
-          padding: EdgeInsets.all(20),
-          child: Text('Aún no tienes reportes con ubicación.'),
-        ),
-    ],
+    );
+  }
+
+  Widget profile() => CitizenProfileDesign(
+    name: '${widget.auth.profile!.firstName} ${widget.auth.profile!.lastName}',
+    email: widget.auth.account!.email,
+    notifications: notificationIndicators,
+    onNotificationsChanged: (v) => setState(() => notificationIndicators = v),
+    onReports: () => selectTab(1),
+    onLocation: configureZone,
+    onLogout: widget.auth.logout,
+    onPrivacy: () => info(
+      'Privacidad',
+      'Tus reportes y fotografías son privados. Usa datos de prueba durante el piloto. La captura de INE real sigue deshabilitada.',
+    ),
+    onHelp: () => info(
+      'Ayuda y soporte',
+      'Piloto de Cuautla, sin atención municipal real. Consulta el estado de tus reportes y sus avisos desde la app. No sustituye los servicios de emergencia.',
+    ),
   );
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: tab == 0 ? const Color(0xffedf9ff) : citizenBackground,
-    appBar: tab == 0
+    backgroundColor: tab == 0
+        ? const Color(0xfff8fcfe)
+        : const Color(0xfff4faff),
+    appBar: tab == 0 || tab == 1 || tab == 5 || tab == 7 || tab == 6
         ? null
-        : AppBar(
-            title: Text(
-              const [
-                'Reporte Ciudadano',
-                'Mis reportes',
-                'Mapa de reportes',
-                'Mi perfil',
-              ][tab],
-            ),
-            actions: [
-              IconButton(
-                tooltip: 'Notificaciones',
-                onPressed: notifications,
-                icon: Badge(
-                  isLabelVisible: unread > 0,
-                  label: Text(unread > 99 ? '99+' : '$unread'),
-                  child: const Icon(Icons.notifications_outlined),
-                ),
-              ),
-            ],
+        : DesignHeader(
+            const {
+                  1: 'Mis reportes',
+                  2: 'Mapa de incidentes',
+                  3: 'Mi perfil',
+                }[tab] ??
+                '',
+            onBack: () => selectTab(0),
+            action: tab == 3
+                ? IconButton(
+                    tooltip: 'Abrir configuración',
+                    icon: const Icon(Icons.settings_outlined, size: 27),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => Scaffold(
+                          appBar: DesignHeader('Mis datos'),
+                          body: widget.profileBuilder(),
+                        ),
+                      ),
+                    ),
+                  )
+                : null,
           ),
     drawer: Drawer(
       backgroundColor: citizenBackground,
@@ -540,8 +725,8 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
               (3, Icons.person_outline, 'Perfil'),
             ])
               ListTile(
-                iconColor: Colors.white,
-                textColor: Colors.white,
+                iconColor: navy,
+                textColor: navy,
                 leading: Icon(entry.$2),
                 title: Text(entry.$3),
                 onTap: () {
@@ -550,8 +735,8 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
                 },
               ),
             ListTile(
-              iconColor: Colors.white,
-              textColor: Colors.white,
+              iconColor: navy,
+              textColor: navy,
               leading: const Icon(Icons.help_outline),
               title: const Text('Ayuda y soporte'),
               onTap: () {
@@ -563,8 +748,8 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
               },
             ),
             ListTile(
-              iconColor: Colors.white,
-              textColor: Colors.white,
+              iconColor: navy,
+              textColor: navy,
               leading: const Icon(Icons.notifications_outlined),
               title: const Text('Notificaciones'),
               onTap: () {
@@ -574,8 +759,8 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
             ),
             const Spacer(),
             ListTile(
-              iconColor: Colors.white,
-              textColor: Colors.white,
+              iconColor: navy,
+              textColor: navy,
               leading: const Icon(Icons.logout),
               title: const Text('Cerrar sesión'),
               onTap: widget.auth.logout,
@@ -587,60 +772,37 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
     ),
     body: Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 760),
+        constraints: const BoxConstraints(maxWidth: 430),
         child: switch (tab) {
           0 => home(),
           1 => ReportsScreen(
             repository: widget.repository,
             auth: widget.auth,
             embedded: true,
+            geocode: widget.geocode,
           ),
-          2 => map(),
-          _ => widget.profileBuilder(),
+          2 => mapCovered ? const SizedBox() : map(),
+          3 => profile(),
+          7 => NotificationsScreen(
+            repository: widget.repository,
+            auth: widget.auth,
+            embedded: true,
+            onBack: () => selectTab(0),
+          ),
+          5 => NotificationsScreen(
+            key: ValueKey(activityUnreadOnly),
+            onRead: () => unawaited(refreshUnread()),
+            initialUnreadOnly: activityUnreadOnly,
+            activity: true,
+            repository: widget.repository,
+            auth: widget.auth,
+            embedded: true,
+            onBack: () => selectTab(0),
+          ),
+          _ => CitizenContacts(onBack: () => selectTab(0)),
         },
       ),
     ),
-    bottomNavigationBar: tab == 0
-        ? homeNavigation()
-        : NavigationBar(
-            selectedIndex: tab < 2 ? tab : tab + 1,
-            onDestinationSelected: (index) {
-              if (index == 2) {
-                reports(create: true);
-              } else {
-                selectTab(index > 2 ? index - 1 : index);
-              }
-            },
-            destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home),
-                label: 'Inicio',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.assignment_outlined),
-                selectedIcon: Icon(Icons.assignment),
-                label: 'Mis reportes',
-              ),
-              NavigationDestination(
-                icon: CircleAvatar(
-                  radius: 18,
-                  backgroundColor: citizenAccent,
-                  child: Icon(Icons.add, color: Colors.white),
-                ),
-                label: 'Crear',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.map_outlined),
-                selectedIcon: Icon(Icons.map),
-                label: 'Mapa',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.person_outline),
-                selectedIcon: Icon(Icons.person),
-                label: 'Perfil',
-              ),
-            ],
-          ),
+    bottomNavigationBar: homeNavigation(),
   );
 }

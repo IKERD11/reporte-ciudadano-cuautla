@@ -21,9 +21,7 @@ void main() {
       expect(tester.takeException(), isNull);
       await tester.ensureVisible(find.text('Comenzar'));
       await tester.tap(find.text('Comenzar'));
-      await tester.ensureVisible(find.text('Ya tengo una cuenta'));
-      await tester.tap(find.text('Ya tengo una cuenta'));
-      expect(calls, 2);
+      expect(calls, 1);
       expect(tester.takeException(), isNull);
     });
   }

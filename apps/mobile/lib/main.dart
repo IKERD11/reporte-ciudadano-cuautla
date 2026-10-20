@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/app_config.dart';
 import 'core/citizen_theme.dart';
+import 'core/citizen_widgets.dart';
 import 'core/secure_auth_storage.dart';
 import 'features/auth/application/auth_controller.dart';
 import 'features/auth/data/supabase_auth_repository.dart';
@@ -46,9 +47,10 @@ class CitizenApp extends StatelessWidget {
   final String? startupError;
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'Reporte Ciudadano · Cuautla',
+    title: 'Cuautla Segura',
     debugShowCheckedModeBanner: false,
     theme: citizenTheme(),
+    builder: (context, child) => CitizenFrame(child: child!),
     home: controller == null
         ? Scaffold(
             body: Center(

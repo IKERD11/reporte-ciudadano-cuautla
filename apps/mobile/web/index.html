@@ -9,9 +9,12 @@
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="theme-color" content="#12685d">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="vendor/maplibre-gl-4.7.1/maplibre-gl.css">
+  <link rel="stylesheet" href="maps/citizen-map.css?release={{flutter_service_worker_version}}">
+  <script src="maps/citizen-map.js?release={{flutter_service_worker_version}}"></script>
   <title>Reporte Ciudadano · Cuautla</title>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+  <script src="flutter_bootstrap.js?release={{flutter_service_worker_version}}" async></script>
 </body>
 </html>

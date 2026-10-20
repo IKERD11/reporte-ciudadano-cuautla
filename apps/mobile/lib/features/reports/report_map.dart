@@ -1,86 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../../core/citizen_design.dart';
+import '../../core/maplibre_surface.dart';
 
+bool isDemonstrationReport(Map<String, dynamic> report) =>
+    report['source'] == 'demo' ||
+    report['is_demo'] == true ||
+    report['demo'] == true;
+
+/// Same map slot and category artwork as the citizen design; only the renderer changes.
 class ReportMap extends StatelessWidget {
-  const ReportMap({super.key, this.point, this.onSelected, this.height = 280});
-  final double height;
+  const ReportMap({
+    super.key,
+    this.point,
+    this.onSelected,
+    this.height = 137,
+    this.reports = const [],
+    this.onReportSelected,
+    this.zoom = 16,
+    this.radius = 16,
+    this.allow3D = false,
+    this.bottomInset = 0,
+    this.controlTop = 8,
+    this.radiusKm,
+  });
+  final double height, zoom, radius, bottomInset, controlTop;
+  final bool allow3D;
+  final double? radiusKm;
   final LatLng? point;
   final ValueChanged<LatLng>? onSelected;
+  final List<Map<String, dynamic>> reports;
+  final ValueChanged<Map<String, dynamic>>? onReportSelected;
+
   @override
   Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(16),
+    borderRadius: BorderRadius.circular(radius),
     child: SizedBox(
       height: height,
-      child: FlutterMap(
-        key: ValueKey('${point?.latitude}/${point?.longitude}'),
-        options: MapOptions(
-          initialCenter: point ?? const LatLng(18.812, -98.955),
-          initialZoom: 14,
-          maxZoom: 19,
-          onTap: onSelected == null ? null : (_, p) => onSelected!(p),
-        ),
-        children: [
-          ColorFiltered(
-            colorFilter: const ColorFilter.matrix([
-              -.7,
-              0,
-              0,
-              0,
-              190,
-              0,
-              -.7,
-              0,
-              0,
-              186,
-              0,
-              0,
-              -.65,
-              0,
-              211,
-              0,
-              0,
-              0,
-              1,
-              0,
-            ]),
-            child: TileLayer(
-              urlTemplate: const String.fromEnvironment(
-                'MAP_TILE_URL',
-                defaultValue: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              ),
-              userAgentPackageName: 'mx.reporteciudadano.piloto',
-              maxNativeZoom: 19,
-            ),
-          ),
-          if (point != null)
-            MarkerLayer(
-              markers: [
-                Marker(
-                  point: point!,
-                  width: 44,
-                  height: 44,
-                  child: const Icon(
-                    Icons.location_pin,
-                    color: Color(0xffab54ff),
-                    size: 44,
-                    semanticLabel: 'Ubicación del reporte',
-                  ),
-                ),
-              ],
-            ),
-          RichAttributionWidget(
-            attributions: [
-              TextSourceAttribution(
-                '© OpenStreetMap contributors',
-                onTap: () => launchUrl(
-                  Uri.parse('https://www.openstreetmap.org/copyright'),
-                ),
-              ),
-            ],
-          ),
-        ],
+      child: MapLibreSurface(
+        options: {
+          'point': point == null
+              ? null
+              : {'latitude': point!.latitude, 'longitude': point!.longitude},
+          'editable': onSelected != null,
+          'allow3D': allow3D && onSelected == null,
+          'radiusKm': radiusKm,
+          'zoom': zoom, 'bottomInset': bottomInset, 'controlTop': controlTop,
+          // Only account reports are accepted here. Demo fixtures belong in separate test/demo entrypoints.
+          'reports': [
+            for (final report in reports)
+              if (!isDemonstrationReport(report))
+                {
+                  'id': report['id'].toString(),
+                  'latitude': report['latitude'],
+                  'longitude': report['longitude'],
+                  'title': report['folio'] ?? 'Reporte',
+                  'source': 'live',
+                  'icon': categoryArtwork(
+                    '${report['category'] ?? report['description'] ?? ''}',
+                  ).$1,
+                },
+          ],
+        },
+        onSelected: (lat, lng) => onSelected?.call(LatLng(lat, lng)),
+        onReportSelected: (id) {
+          for (final report in reports) {
+            if (!isDemonstrationReport(report) &&
+                report['id'].toString() == id) {
+              onReportSelected?.call(report);
+              break;
+            }
+          }
+        },
       ),
     ),
   );

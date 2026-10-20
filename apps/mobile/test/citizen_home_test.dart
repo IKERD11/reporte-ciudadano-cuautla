@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reporte_ciudadano/features/reports/report_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reporte_ciudadano/core/citizen_theme.dart';
 import 'package:reporte_ciudadano/features/auth/application/auth_controller.dart';
@@ -23,6 +24,8 @@ class HomeReports implements ReportRepository {
           'description': 'Luminaria de prueba sin luz',
           'images': [],
         }
+      : action == 'notifications_list'
+      ? {'items': [], 'total': 0}
       : {'reports': []};
 }
 
@@ -64,7 +67,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Mapa').last);
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('REP-TEST-001'));
+    final map = tester.widget<ReportMap>(find.byType(ReportMap));
+    map.onReportSelected!(map.reports.first);
     await tester.pumpAndSettle();
     expect(find.text('REP-TEST-001'), findsOneWidget);
     expect(find.text('Recibido'), findsOneWidget);
@@ -74,7 +78,16 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.tap(find.byTooltip('Cerrar vista del reporte'));
     await tester.pumpAndSettle();
-    expect(find.text('REP-TEST-001'), findsNothing);
+    expect(find.byTooltip('Cerrar vista del reporte'), findsNothing);
+    expect(find.text('Sin fotografía'), findsNothing);
+    expect(find.text('Incidentes cercanos'), findsOneWidget);
+    // A pushed report route must release the map even while the home route remains mounted.
+    await tester.tap(find.text('Reportar').last);
+    await tester.pumpAndSettle();
+    expect(find.byType(ReportMap, skipOffstage: false), findsNothing);
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
+    await tester.pumpAndSettle();
+    expect(find.byType(ReportMap), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     auth.dispose();
     await repo.events.close();
@@ -106,15 +119,10 @@ void main() {
       expect(tester.takeException(), isNull);
       await tester.tap(find.text('Perfil'));
       await tester.pumpAndSettle();
-      expect(find.text('Perfil de prueba'), findsOneWidget);
+      expect(find.text('Ana Pérez'), findsOneWidget);
       await tester.tap(find.text('Mis reportes'));
       await tester.pumpAndSettle();
-      expect(
-        find.text(
-          'No hay reportes en esta página. Puedes crear tu primera prueba.',
-        ),
-        findsOneWidget,
-      );
+      expect(find.text('No hay reportes con este estado.'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
       auth.dispose();

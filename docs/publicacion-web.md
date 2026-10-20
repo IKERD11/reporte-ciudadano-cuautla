@@ -9,7 +9,7 @@ El panel requiere una cuenta con permisos; publicar su login no concede acceso
 a reportes. Se mantienen INE reales bloqueadas y la demostración deshabilitada
 en la compilación de producción.
 
-El código fuente de trabajo sigue en el repositorio privado. Los repositorios
+El código fuente de trabajo está en `IKERD11/reporte-ciudadano-cuautla`. El 18 de octubre se comprobó mediante GitHub que ese repositorio está público; la referencia anterior a un repositorio privado estaba desactualizada. No se cambió su visibilidad en esta entrega. Los repositorios
 públicos `IKERD11/reporte-ciudadano-app` y `IKERD11/reporte-ciudadano-dashboard`
 contienen los archivos compilados que descarga el navegador, no respaldos,
 evidencias, sesiones ni claves de servidor. La clave publicable de Supabase
@@ -34,6 +34,7 @@ Desde `apps/mobile`, con Flutter instalado y `config/pilot.json` local:
 
 ```powershell
 flutter build web --release --base-href=/reporte-ciudadano-app/ --dart-define-from-file=config/pilot.json --dart-define=AUTH_REDIRECT_URL=https://ikerd11.github.io/reporte-ciudadano-app/
+node ../../scripts/package-citizen-web.mjs build/web
 ```
 
 Desde `apps/admin`, con dependencias instaladas y `.env.local` que contenga
@@ -90,3 +91,29 @@ y base de datos continúa pendiente.
 Referencias: [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages),
 [exportación Next.js](https://nextjs.org/docs/app/guides/static-exports),
 [retornos Supabase](https://supabase.com/docs/guides/auth/redirect-urls).
+
+
+## Actualización del 18 de octubre de 2026
+
+Se publica la renovación ciudadana y MapLibre GL JS con OpenFreeMap, sin claves ni facturación. La búsqueda queda conectada al servicio autenticado `report-pilot`, acción `geocode`, existente; conserva Nominatim, caché y límites globales del piloto. No se redeployó el backend ni se modificaron cuentas o políticas.
+
+Validación: 34 pruebas Flutter, 3 pruebas del normalizador del servidor y análisis sin incidencias; compilación de producción con base y retorno públicos correctos. La consulta aislada de un parque público de Cuautla devolvió un candidato real. CORS del sitio público responde 204, origen ajeno 403 y solicitud sin sesión 401. No equivale a una validación autenticada del buscador.
+
+GitHub Pages publicó el commit inicial `8200735` con éxito. Los archivos HTML, JavaScript de Flutter, puente y CSS de MapLibre, biblioteca y nueva ilustración respondieron HTTP 200 y coincidieron con la compilación, normalizando únicamente finales de línea de Git para archivos de texto.
+
+La revisión en un navegador que había abierto la app anterior detectó un arranque desde caché. Se versionan las URLs de bootstrap, entrada Dart y puente/CSS del mapa con el token único generado por Flutter, conservando la caché dentro de una misma entrega. No se borran sesiones, cachés de otras aplicaciones ni datos del navegador. Cada futura publicación debe compilar de nuevo; no reutilizar el bootstrap de una entrega anterior.
+
+Código preparado en https://github.com/IKERD11/reporte-ciudadano-cuautla/pull/1 . El recorrido con una sesión real y GPS en teléfono físico siguen pendientes de intervención del propietario. No sustituir esas comprobaciones con GPS simulado o acceso administrativo.
+
+El empaquetado `scripts/package-citizen-web.mjs` añade además nombres basados en el hash del contenido a la entrada Dart, bootstrap y puente/CSS del mapa. El HTML referencia esos nombres nuevos, de modo que tampoco se reutiliza un bootstrap antiguo durante publicaciones sucesivas próximas. Ejecutar este paso después de cada compilación de producción. Los archivos canónicos se conservan para compatibilidad con clientes anteriores.
+
+
+Entrega final comprobada: commit de publicación `a9037e5`, despliegue Pages `39164305221` completado con éxito. HTML, entrada Dart y bootstrap/puente/CSS con nombres versionados responden HTTP 200 y coinciden con el paquete local tras normalizar finales de línea de texto. La pestaña que inicialmente mostraba el diseño antiguo pasó a mostrar la bienvenida nueva y el acceso, sin borrar datos ni cambiar permisos del navegador. Captura local: `output/figma-renovacion/publicacion-acceso-2026-10-18.jpg`.
+
+Se dejó abierta la pantalla de acceso para que el propietario inicie sesión. No hay una sesión autenticada disponible en el navegador conectado ni acceso a un teléfono físico; las comprobaciones de búsqueda dentro de la cuenta, creación/consulta autenticada y GPS real no se declaran terminadas. No se solicitaron contraseñas por chat ni se crearon cuentas sustitutas.
+
+## Actualización del 19 de octubre de 2026
+
+Publicada la nueva exportación Figma: configuración de zona y radio, actividad separada de alertas, seguimiento real, nuevos recursos originales y ajustes del acceso. Catálogo de ocho categorías del diseño habilitado en el piloto. Detalle y límites en [renovación del 19 de octubre](renovacion-2026-10-19.md).
+
+Publicación final `43874c8`; ejecución Pages `39366775411` exitosa. Recursos públicos verificados contra el paquete local y arranque, bienvenida, acceso y recuperación comprobados en navegador. Se corrigieron los atributos sobrantes que producía el token con comillas de Flutter durante el empaquetado; dos pruebas de regresión aprobadas. 38 pruebas Flutter, tres de direcciones y pruebas de navegador de mapas aprobadas; análisis sin incidencias. La zona es una preferencia local por cuenta y no activa notificaciones automáticas. No se modificó el panel administrativo ni se habilitaron servicios de pago.

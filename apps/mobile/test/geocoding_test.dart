@@ -32,7 +32,7 @@ void main() {
                 categories: const [
                   {
                     'id': 'test',
-                    'name': 'Servicios',
+                    'name': 'Alumbrado público',
                     'requires_location': true,
                     'requires_photo': false,
                     'subcategories': [],
@@ -40,6 +40,12 @@ void main() {
                   },
                 ],
                 repository: repo,
+                geocode: (q) async {
+                  final r = await repo.call('geocode', {'query': q});
+                  return (r['results'] as List)
+                      .map((v) => Map<String, dynamic>.from(v))
+                      .toList();
+                },
                 onCreated: (_) {},
                 onCancel: () {},
               ),
@@ -47,14 +53,21 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.text('Servicios'));
-      await tester.tap(find.text('Continuar'));
+      await tester.tap(find.text('Alumbrado público'));
+      await tester.ensureVisible(find.text('Siguiente'));
+      await tester.tap(find.text('Siguiente'));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextFormField), 'Calle pública uno');
+      await tester.enterText(
+        find.byKey(const ValueKey('incident-address')),
+        'Calle pública uno',
+      );
       expect(repo.pending, isEmpty);
-      await tester.tap(find.text('Buscar dirección en el mapa'));
+      await tester.tap(find.text('Buscar'));
       await tester.pump();
-      await tester.enterText(find.byType(TextFormField), 'Calle pública dos');
+      await tester.enterText(
+        find.byKey(const ValueKey('incident-address')),
+        'Calle pública dos',
+      );
       repo.pending.first.complete({
         'results': [
           {
@@ -66,7 +79,7 @@ void main() {
       });
       await tester.pumpAndSettle();
       expect(find.text('Resultado antiguo'), findsNothing);
-      await tester.tap(find.text('Buscar dirección en el mapa'));
+      await tester.tap(find.text('Buscar'));
       await tester.pump();
       repo.pending.last.complete({
         'results': [
@@ -78,8 +91,10 @@ void main() {
         ],
       });
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Centro, Cuautla'));
-      await tester.tap(find.text('Centro, Cuautla'));
+      await tester.ensureVisible(
+        find.widgetWithText(ListTile, 'Centro, Cuautla'),
+      );
+      await tester.tap(find.widgetWithText(ListTile, 'Centro, Cuautla'));
       await tester.pumpAndSettle();
       final map = tester.widget<ReportMap>(find.byType(ReportMap));
       expect(map.point?.latitude, 18.81);
