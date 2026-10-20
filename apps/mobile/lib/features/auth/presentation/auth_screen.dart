@@ -658,6 +658,7 @@ class _AuthScreenState extends State<AuthScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
+          key: ValueKey('auth-${auth.stage}-$register-$forgot'),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           child: Center(
             child: ConstrainedBox(
