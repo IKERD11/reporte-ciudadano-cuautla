@@ -1,5 +1,7 @@
 # Renovación visual desde Figma Make
 
+> Esta entrega inicial queda ampliada por [la renovación del 19 de octubre](renovacion-2026-10-19.md), con MapLibre/OpenFreeMap publicado, catálogo completo, zona, actividad y seguimiento. Los apartados sobre Google Maps y categorías pendientes describen el estado anterior.
+
 Referencia: https://www.figma.com/make/KImRQTzbnmmNVWyYFe86jH/Subir-carpeta-al-proyecto
 
 Fuente: ZIP facilitado por el propietario el 18 de octubre de 2026. La segunda revisión sustituye las adaptaciones visuales de la primera por la composición de la nueva versión: inicio, categorías, detalles, confirmación, envío, lista y detalle de reportes, mapa, alertas, contactos y perfil.

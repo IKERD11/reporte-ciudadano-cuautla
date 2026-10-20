@@ -111,3 +111,9 @@ El empaquetado `scripts/package-citizen-web.mjs` añade además nombres basados 
 Entrega final comprobada: commit de publicación `a9037e5`, despliegue Pages `39164305221` completado con éxito. HTML, entrada Dart y bootstrap/puente/CSS con nombres versionados responden HTTP 200 y coinciden con el paquete local tras normalizar finales de línea de texto. La pestaña que inicialmente mostraba el diseño antiguo pasó a mostrar la bienvenida nueva y el acceso, sin borrar datos ni cambiar permisos del navegador. Captura local: `output/figma-renovacion/publicacion-acceso-2026-10-18.jpg`.
 
 Se dejó abierta la pantalla de acceso para que el propietario inicie sesión. No hay una sesión autenticada disponible en el navegador conectado ni acceso a un teléfono físico; las comprobaciones de búsqueda dentro de la cuenta, creación/consulta autenticada y GPS real no se declaran terminadas. No se solicitaron contraseñas por chat ni se crearon cuentas sustitutas.
+
+## Actualización del 19 de octubre de 2026
+
+Publicada la nueva exportación Figma: configuración de zona y radio, actividad separada de alertas, seguimiento real, nuevos recursos originales y ajustes del acceso. Catálogo de ocho categorías del diseño habilitado en el piloto. Detalle y límites en [renovación del 19 de octubre](renovacion-2026-10-19.md).
+
+Publicación final `7686d48`; ejecución Pages `39366236371` exitosa. Recursos públicos verificados contra el paquete local y arranque, bienvenida, acceso y recuperación comprobados en navegador. Se corrigieron los atributos sobrantes que producía el token con comillas de Flutter durante el empaquetado; dos pruebas de regresión aprobadas. 38 pruebas Flutter, tres de direcciones y pruebas de navegador de mapas aprobadas; análisis sin incidencias. La zona es una preferencia local por cuenta y no activa notificaciones automáticas. No se modificó el panel administrativo ni se habilitaron servicios de pago.

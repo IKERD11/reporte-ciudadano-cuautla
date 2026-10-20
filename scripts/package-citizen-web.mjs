@@ -15,6 +15,10 @@ async function fingerprint(relative) {
 }
 let html = await readFile(join(root, 'index.html'), 'utf8');
 let bootstrap = await readFile(join(root, 'flutter_bootstrap.js'), 'utf8');
+// Flutter emits this template token as a quoted JavaScript string, including
+// when it appears inside an HTML attribute. Normalize before fingerprinting.
+html = html.replace(/\?release="(\d+)""/g, '?release=$1"');
+bootstrap = bootstrap.replace(/\?release="(\d+)"/g, '?release=$1');
 const main = await fingerprint('main.dart.js');
 const key = /"mainJsPath"\s*:\s*"main\.dart\.js"/g;
 if (!key.test(bootstrap)) throw new Error('Flutter build must run before packaging.');
