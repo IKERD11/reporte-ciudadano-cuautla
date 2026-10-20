@@ -15,12 +15,16 @@ class NotificationsScreen extends StatefulWidget {
     required this.repository,
     required this.auth,
     this.embedded = false,
+    this.activity = false,
+    this.initialUnreadOnly = false,
     this.onBack,
+    this.onRead,
   });
   final ReportRepository repository;
   final AuthController auth;
-  final bool embedded;
+  final bool embedded, activity, initialUnreadOnly;
   final VoidCallback? onBack;
+  final VoidCallback? onRead;
   @override
   State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
@@ -32,6 +36,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool busy = false;
   String? error;
   String categoryFilter = 'Todas';
+  String activityFilter = 'Todo', query = '';
+  bool searchOpen = false;
+  late bool unreadOnly = widget.initialUnreadOnly;
   Map<String, dynamic>? selectedAlert, alertReport;
   bool get current => mounted && widget.auth.account?.id == actor;
   @override
@@ -94,7 +101,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       }
       if (!mounted || !current) return;
       setState(() => item['read_at'] = DateTime.now().toIso8601String());
+      widget.onRead?.call();
       Map<String, dynamic>? report;
+      if (widget.activity && item['report_id'] != null) {
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ReportsScreen(
+              repository: widget.repository,
+              auth: widget.auth,
+              initialReportId: item['report_id'] as String,
+            ),
+          ),
+        );
+        return;
+      }
       if (item['report_id'] != null) {
         report = await widget.repository.call('detail', {
           'report_id': item['report_id'],
@@ -113,6 +133,49 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     } finally {
       if (current) setState(() => busy = false);
     }
+  }
+
+  String kind(Map<String, dynamic> item) {
+    final type = '${item['type'] ?? item['kind'] ?? ''}'.toLowerCase();
+    if (type.contains('comment')) return 'Comentarios';
+    return item['report_id'] != null ? 'Reportes' : 'Alertas';
+  }
+
+  String activityArtwork(Map<String, dynamic> item) {
+    if (kind(item) == 'Comentarios') return 'activity-comment';
+    if (kind(item) == 'Alertas') return 'activity-alert';
+    final text = '${item['title']} ${item['body']}'.toLowerCase();
+    if (text.contains('rechaz') || text.contains('cerrado')) {
+      return 'activity-rejected';
+    }
+    if (text.contains('resuelto') || text.contains('acept')) {
+      return 'activity-accepted';
+    }
+    return 'activity-pending';
+  }
+
+  bool matches(Map<String, dynamic> item) => widget.activity
+      ? (activityFilter == 'Todo' || kind(item) == activityFilter) &&
+            (!unreadOnly || item['read_at'] == null) &&
+            '${item['title']} ${item['body']}'.toLowerCase().contains(
+              query.trim().toLowerCase(),
+            )
+      : (categoryFilter == 'Todas' || alertCategory(item) == categoryFilter);
+
+  String dayLabel(Map<String, dynamic> item) {
+    final value = DateTime.tryParse('${item['created_at']}')?.toLocal();
+    if (value == null) return 'Sin fecha';
+    final now = DateTime.now();
+    final days = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).difference(DateTime(value.year, value.month, value.day)).inDays;
+    return days == 0
+        ? 'Hoy'
+        : days == 1
+        ? 'Ayer'
+        : '${value.day}/${value.month}/${value.year}';
   }
 
   String date(dynamic value) {
@@ -345,12 +408,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       : Scaffold(
           backgroundColor: const Color(0xfff4faff),
           appBar: DesignHeader(
-            'Alertas comunitarias',
+            widget.activity ? 'Actividad' : 'Alertas comunitarias',
             onBack: widget.onBack,
             action: IconButton(
-              tooltip: 'Actualizar avisos',
-              onPressed: busy ? null : () => load(page: 0),
-              icon: const Icon(Icons.notifications_none, size: 25),
+              tooltip: widget.activity
+                  ? 'Buscar en actividad'
+                  : 'Actualizar avisos',
+              onPressed: busy
+                  ? null
+                  : widget.activity
+                  ? () => setState(() => searchOpen = !searchOpen)
+                  : () => load(page: 0),
+              icon: Icon(
+                widget.activity ? Icons.search : Icons.notifications_none,
+                size: 25,
+              ),
             ),
           ),
           body: Center(
@@ -362,44 +434,95 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(18, 8, 18, 24),
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(22),
+                    if (widget.activity && searchOpen)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: TextField(
+                          onChanged: (v) => setState(() => query = v),
+                          decoration: const InputDecoration(
+                            hintText: 'Buscar reporte, estado o colonia',
+                            prefixIcon: Icon(Icons.search),
+                          ),
+                        ),
                       ),
-                      child: Row(
+                    if (widget.activity)
+                      Wrap(
+                        spacing: 5,
                         children: [
                           for (final label in [
-                            'Todas',
-                            'Seguridad',
-                            'Tránsito',
-                            'Servicios',
+                            'Todo',
+                            'Reportes',
+                            'Comentarios',
+                            'Alertas',
                           ])
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 3,
-                                ),
-                                child: Material(
-                                  color: categoryFilter == label
-                                      ? const Color(0xff1769ed)
-                                      : const Color(0xffedf5fc),
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: InkWell(
-                                    onTap: () =>
-                                        setState(() => categoryFilter = label),
-                                    child: SizedBox(
-                                      height: 43,
-                                      child: Center(
-                                        child: Text(
-                                          label,
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w700,
-                                            color: categoryFilter == label
-                                                ? Colors.white
-                                                : const Color(0xff55779e),
+                            ChoiceChip(
+                              label: Text(
+                                label,
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                              selected: activityFilter == label,
+                              onSelected: (_) =>
+                                  setState(() => activityFilter = label),
+                            ),
+                        ],
+                      ),
+                    if (widget.activity)
+                      Row(
+                        children: [
+                          FilterChip(
+                            label: const Text('Solo no leídas'),
+                            selected: unreadOnly,
+                            onSelected: (v) => setState(() => unreadOnly = v),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            tooltip: 'Actualizar actividad',
+                            onPressed: busy ? null : () => load(page: 0),
+                            icon: const Icon(Icons.refresh),
+                          ),
+                        ],
+                      ),
+                    if (!widget.activity)
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                        child: Row(
+                          children: [
+                            for (final label in [
+                              'Todas',
+                              'Seguridad',
+                              'Tránsito',
+                              'Servicios',
+                            ])
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 3,
+                                  ),
+                                  child: Material(
+                                    color: categoryFilter == label
+                                        ? const Color(0xff1769ed)
+                                        : const Color(0xffedf5fc),
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: InkWell(
+                                      onTap: () => setState(
+                                        () => categoryFilter = label,
+                                      ),
+                                      child: SizedBox(
+                                        height: 43,
+                                        child: Center(
+                                          child: Text(
+                                            label,
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w700,
+                                              color: categoryFilter == label
+                                                  ? Colors.white
+                                                  : const Color(0xff55779e),
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -407,10 +530,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                   ),
                                 ),
                               ),
-                            ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 17),
                     if (busy) const LinearProgressIndicator(),
                     if (error != null)
@@ -418,29 +540,51 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         onPressed: busy ? null : () => load(),
                         child: Text(error!),
                       ),
-                    if (!busy && error == null && items.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(40),
+                    if (!busy && error == null && items.where(matches).isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(40),
                         child: Column(
                           children: [
                             Icon(Icons.notifications_none, size: 48),
                             SizedBox(height: 16),
                             Text(
-                              'No hay alertas en esta categoría.',
+                              widget.activity
+                                  ? 'No encontramos actividad con estos criterios.'
+                                  : 'No hay alertas en esta categoría.',
                               textAlign: TextAlign.center,
                             ),
                           ],
                         ),
                       ),
-                    for (final item in items.where(
-                      (i) =>
-                          categoryFilter == 'Todas' ||
-                          alertCategory(i) == categoryFilter,
-                    ))
+                    for (final (index, item)
+                        in items.where(matches).indexed) ...[
+                      if (widget.activity &&
+                          (index == 0 ||
+                              dayLabel(
+                                    items.where(matches).elementAt(index - 1),
+                                  ) !=
+                                  dayLabel(item)))
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(2, 15, 2, 8),
+                          child: Text(
+                            dayLabel(item),
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
                       Card(
                         child: ListTile(
                           contentPadding: const EdgeInsets.all(16),
-                          leading: CitizenSticker(alertIcon(item), size: 58),
+                          leading: widget.activity
+                              ? Image.asset(
+                                  'assets/renewal/icons/3d/${activityArtwork(item)}.png',
+                                  width: 52,
+                                  height: 52,
+                                  fit: BoxFit.contain,
+                                )
+                              : CitizenSticker(alertIcon(item), size: 58),
                           title: Text(
                             item['title'] as String,
                             style: TextStyle(
@@ -452,7 +596,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           subtitle: Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
-                              '${item['body']}\n${date(item['created_at'])}',
+                              '${item['body']}\n${date(item['created_at'])}${widget.activity
+                                  ? item['read_at'] == null
+                                        ? ' · No leída'
+                                        : ' · Leída'
+                                  : ''}',
                             ),
                           ),
                           trailing: Icon(
@@ -464,6 +612,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           onTap: busy ? null : () => open(item),
                         ),
                       ),
+                    ],
                     if (total > 0)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

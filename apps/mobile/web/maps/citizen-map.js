@@ -38,6 +38,7 @@
   function create(host, initial, handlers = {}) {
     let options = initial, map, selectedMarker, markers = [], listeners = [];
     let dead = false, generation = 0, timer, threeD = false;
+    let lastZone = null;
     let lastPoint = null, markerListeners = [], demoLabel, currentControls, failed = false;
     host.className = 'citizen-map';
     const stage = node('div', 'citizen-map-stage');
@@ -79,7 +80,7 @@
       clearTimeout(timer);
       for (const remove of listeners.splice(0)) remove();
       clearMarkers();
-      map?.remove(); map = null;
+      map?.remove(); map = null; lastZone = null;
     }
     function emitPoint(position) {
       if (dead || !options.editable) return;
@@ -130,6 +131,35 @@
       }
       if (map.getLayer(BUILDINGS)) map.setLayoutProperty(BUILDINGS, 'visibility', threeD ? 'visible' : 'none');
     }
+    function updateZone() {
+      if (!map?.isStyleLoaded()) return;
+      const center = coordinate(options.point), radius = options.radiusKm;
+      const enabled = center && Number.isFinite(radius) && radius >= 1 && radius <= 10;
+      const signature = JSON.stringify([center, radius]);
+      if (signature === lastZone && map.getSource('citizen-zone')) return;
+      const coordinates = [];
+      if (enabled) {
+        const lat = center[1] * Math.PI / 180, lng = center[0] * Math.PI / 180, distance = radius / 6371;
+        for (let i = 0; i <= 80; i++) {
+          const angle = i / 80 * Math.PI * 2;
+          const y = Math.asin(Math.sin(lat)*Math.cos(distance)+Math.cos(lat)*Math.sin(distance)*Math.cos(angle));
+          const x = lng + Math.atan2(Math.sin(angle)*Math.sin(distance)*Math.cos(lat),Math.cos(distance)-Math.sin(lat)*Math.sin(y));
+          coordinates.push([x*180/Math.PI,y*180/Math.PI]);
+        }
+      }
+      const data = {type:'FeatureCollection',features: enabled ? [{type:'Feature',properties:{},geometry:{type:'Polygon',coordinates:[coordinates]}}] : []};
+      if (enabled && options.editable && signature !== lastZone) {
+        const deltaLat = radius / 111.2, deltaLng = deltaLat / Math.cos(center[1] * Math.PI / 180);
+        map.fitBounds([[center[0]-deltaLng,center[1]-deltaLat],[center[0]+deltaLng,center[1]+deltaLat]], {padding:35,duration:lastZone ? 250 : 0});
+      }
+      lastZone = signature;
+      if(map.getSource('citizen-zone')) map.getSource('citizen-zone').setData(data);
+      else {
+        map.addSource('citizen-zone',{type:'geojson',data});
+        map.addLayer({id:'citizen-zone-fill',type:'fill',source:'citizen-zone',paint:{'fill-color':'#3b9df5','fill-opacity':0.16}});
+        map.addLayer({id:'citizen-zone-line',type:'line',source:'citizen-zone',paint:{'line-color':'#2387e9','line-width':2,'line-opacity':0.55}});
+      }
+    }
     function apply() {
       host.style.setProperty('--map-bottom', `${Math.max(0, options.bottomInset || 0)}px`);
       host.style.setProperty('--control-top', `${Math.max(0, options.controlTop || 8)}px`);
@@ -140,6 +170,7 @@
       const point = coordinate(options.point);
       if (point && JSON.stringify(point) !== JSON.stringify(lastPoint)) map.easeTo({center: point, duration: 300});
       lastPoint = point;
+      updateZone();
       map.resize();
     }
     async function start() {
@@ -155,6 +186,9 @@
         map = new library.Map({container: canvas, style: STYLE, center: coordinate(options.point) || CENTER, zoom: options.zoom || 16,
           pitch: options.allow3D && !options.editable && threeD ? 55 : 0, bearing: 0, maxPitch: options.allow3D && !options.editable ? 65 : 0, attributionControl: false, renderWorldCopies: false,
           dragRotate: false, touchPitch: false, pitchWithRotate: false});
+        listen(map, 'styleimagemissing', ({id}) => {
+          if (!map.hasImage(id)) map.addImage(id,{width:1,height:1,data:new Uint8Array([0,0,0,0])});
+        });
         map.touchZoomRotate.disableRotation();
         if (options.editable) map.setPadding({top: 43, bottom: 0, left: 0, right: 0});
         const controls = node('div', 'citizen-map-controls');
@@ -184,9 +218,9 @@
           } else selectedMarker.setLngLat(event.lngLat);
           emitPoint(event.lngLat);
         });
-        listen(map, 'load', () => { if (dead || generation !== run) return; clearTimeout(timer); setDimension(); if (!failed) state('ready'); });
+        listen(map, 'load', () => { if (dead || generation !== run) return; clearTimeout(timer); setDimension(); updateZone(); if (!failed) state('ready'); });
         listen(map, 'error', () => { if (!dead && generation === run) { failed = true; state('error'); } });
-        listen(map, 'idle', () => { if (!dead && !failed && map?.isStyleLoaded() && map.areTilesLoaded()) { clearTimeout(timer); state('ready'); } });
+        listen(map, 'idle', () => { updateZone(); if (!dead && !failed && map?.isStyleLoaded() && map.areTilesLoaded()) { clearTimeout(timer); state('ready'); } });
         const lost = event => { event.preventDefault(); failed = true; state('error'); };
         map.getCanvas().addEventListener('webglcontextlost', lost);
         listeners.push(() => map?.getCanvas().removeEventListener('webglcontextlost', lost));

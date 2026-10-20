@@ -32,6 +32,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool register = false, forgot = false, editing = false, obscure = true;
   bool welcomed = false;
   bool repeatObscure = true;
+  bool accepted = false;
   String? municipality;
   AuthStage? previous;
   AuthController get auth => widget.controller;
@@ -44,6 +45,12 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void changed() {
     if (previous != auth.stage) {
+      if (auth.stage == AuthStage.profileSetup &&
+          first.text.trim().contains(' ')) {
+        final parts = first.text.trim().split(RegExp(r'\s+'));
+        first.text = parts.first;
+        last.text = parts.skip(1).join(' ');
+      }
       password.clear();
       repeat.clear();
       editing = false;
@@ -101,6 +108,12 @@ class _AuthScreenState extends State<AuthScreen> {
           : TextInputType.text,
       decoration: InputDecoration(
         labelText: label,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        hintText: c == email
+            ? 'Tu correo electrónico'
+            : secret
+            ? 'Escribe tu contraseña'
+            : null,
         prefixIcon: Icon(
           secret
               ? Icons.lock_outline
@@ -109,7 +122,9 @@ class _AuthScreenState extends State<AuthScreen> {
               : c == phone
               ? Icons.phone_outlined
               : Icons.badge_outlined,
-          size: 20,
+          size: auth.stage == AuthStage.signedOut && !register && !forgot
+              ? 27
+              : 21,
         ),
         counterText: '',
         suffixIcon: secret
@@ -163,6 +178,7 @@ class _AuthScreenState extends State<AuthScreen> {
   }) => DesignButton(
     title,
     arrow: true,
+    auth: auth.stage == AuthStage.signedOut || auth.stage == AuthStage.recovery,
     onPressed: auth.busy
         ? null
         : () async {
@@ -176,16 +192,38 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget heading(String title, String subtitle) => Padding(
     padding: const EdgeInsets.only(bottom: 28),
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment:
+          auth.stage == AuthStage.signedOut || auth.stage == AuthStage.recovery
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: Theme.of(
-            context,
-          ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
+          textAlign:
+              auth.stage == AuthStage.signedOut ||
+                  auth.stage == AuthStage.recovery
+              ? TextAlign.center
+              : TextAlign.start,
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w800,
+            fontSize: register ? 24 : 32,
+            height: 1.12,
+          ),
         ),
         const SizedBox(height: 12),
-        Text(subtitle, style: const TextStyle(height: 1.5)),
+        Text(
+          subtitle,
+          textAlign:
+              auth.stage == AuthStage.signedOut ||
+                  auth.stage == AuthStage.recovery
+              ? TextAlign.center
+              : TextAlign.start,
+          style: const TextStyle(
+            height: 1.45,
+            fontSize: 14,
+            color: Color(0xff6a85a6),
+          ),
+        ),
       ],
     ),
   );
@@ -233,7 +271,10 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
           field('Nueva contraseña', password, secret: true),
           field('Repite la contraseña', repeat, secret: true),
-          button('Guardar contraseña', () => auth.savePassword(password.text)),
+          button(
+            'Restablecer contraseña',
+            () => auth.savePassword(password.text),
+          ),
           TextButton(
             onPressed: auth.busy ? null : auth.logout,
             child: const Text('Cancelar y cerrar sesión'),
@@ -440,10 +481,79 @@ class _AuthScreenState extends State<AuthScreen> {
                 ? 'Tu participación comienza con una cuenta segura.'
                 : 'Inicia sesión para seguir cuidando tu comunidad.',
           ),
+          if (register && !forgot) field('Nombre completo', first, max: 120),
           field('Correo electrónico', email, max: 254),
           if (!forgot) field('Contraseña', password, secret: true),
           if (register && !forgot)
             field('Repite la contraseña', repeat, secret: true),
+          if (register && !forgot) ...[
+            const Text(
+              'Mínimo 12 caracteres para proteger tu cuenta.',
+              style: TextStyle(fontSize: 12),
+            ),
+            FormField<bool>(
+              validator: (_) => accepted
+                  ? null
+                  : 'Acepta las condiciones del piloto para continuar.',
+              builder: (state) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    value: accepted,
+                    onChanged: auth.busy
+                        ? null
+                        : (v) => setState(() {
+                            accepted = v ?? false;
+                            state.didChange(accepted);
+                          }),
+                    title: const Text(
+                      'Acepto los términos y el aviso de privacidad del piloto',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text('Condiciones del piloto'),
+                        content: const Text(
+                          'Entorno de prueba, sin atención municipal real. Usa datos sintéticos y evita datos personales en reportes. Tus reportes y evidencias son privados. Las INE reales siguen deshabilitadas. Los términos institucionales definitivos están pendientes de aprobación.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cerrar'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    child: const Text('Leer términos y privacidad'),
+                  ),
+                  if (state.errorText != null)
+                    Text(
+                      state.errorText!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 12,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+          if (!register && !forgot)
+            TextButton(
+              onPressed: auth.busy
+                  ? null
+                  : () => setState(() {
+                      forgot = true;
+                      password.clear();
+                      auth.clearMessage();
+                    }),
+              child: const Text('¿Olvidaste tu contraseña?'),
+            ),
           button(
             forgot
                 ? 'Enviar enlace'
@@ -456,17 +566,18 @@ class _AuthScreenState extends State<AuthScreen> {
                 ? auth.register(email.text, password.text)
                 : auth.login(email.text, password.text),
           ),
-          if (!register && !forgot)
-            TextButton(
-              onPressed: auth.busy
-                  ? null
-                  : () => setState(() {
-                      forgot = true;
-                      password.clear();
-                      auth.clearMessage();
-                    }),
-              child: const Text('Olvidé mi contraseña'),
-            ),
+          const SizedBox(height: 24),
+          const Divider(),
+          const SizedBox(height: 12),
+          Text(
+            forgot
+                ? '¿Ya recuerdas tu contraseña?'
+                : register
+                ? '¿Ya tienes cuenta?'
+                : '¿Aún no tienes cuenta?',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 13, color: Color(0xff6a85a6)),
+          ),
           TextButton(
             onPressed: auth.busy
                 ? null
@@ -480,11 +591,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     repeat.clear();
                     auth.clearMessage();
                   }),
-            child: Text(
-              forgot || register
-                  ? 'Ya tengo cuenta · Iniciar sesión'
-                  : 'Soy nuevo · Crear una cuenta',
-            ),
+            child: Text(forgot || register ? 'Inicia sesión' : 'Crear cuenta'),
           ),
           const SizedBox(height: 20),
           const Text(
@@ -568,7 +675,11 @@ class _AuthScreenState extends State<AuthScreen> {
                           : register
                           ? 'people'
                           : 'lock'}.webp',
-                      height: register ? 160 : 190,
+                      height: register
+                          ? 160
+                          : forgot
+                          ? 210
+                          : 240,
                       fit: BoxFit.contain,
                       excludeFromSemantics: true,
                     ),

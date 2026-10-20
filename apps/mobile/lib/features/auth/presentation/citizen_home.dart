@@ -1,3 +1,5 @@
+import 'zone_screen.dart';
+import '../../../core/zone_storage.dart';
 import 'dart:async';
 import '../../../core/citizen_design.dart';
 import '../../../core/citizen_sticker.dart';
@@ -40,6 +42,7 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
   bool mapLoaded = false;
   bool mapCovered = false;
   bool notificationIndicators = true;
+  bool activityUnreadOnly = false;
   String mapQuery = "";
   String mapFilter = "Todos";
   LatLng? mapFocus;
@@ -49,11 +52,15 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
   double mapCardHeight = 203;
   Map<String, dynamic>? selectedReport;
   late final String actor;
+  CitizenZone zone = const CitizenZone();
+  bool zoneConfigured = false;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     actor = widget.auth.account!.id;
+    zone = CitizenZone.decode(readZone(actor));
+    zoneConfigured = readZone(actor) != null;
     unawaited(load());
     unawaited(refreshUnread());
   }
@@ -104,6 +111,7 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
   }
 
   Future<void> notifications() async {
+    activityUnreadOnly = unread > 0;
     await selectTab(5);
   }
 
@@ -198,12 +206,48 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
       onReport: () => reports(create: true),
       onMap: () => selectTab(2),
       onReports: () => selectTab(1),
-      onNotifications: notifications,
+      onNotifications: () => selectTab(7),
+      onZone: configureZone,
+      onActivity: notifications,
+      zoneAddress: zone.address,
       onHelp: () => selectTab(6),
     ),
   );
 
+  Future<void> configureZone() async {
+    if (tab == 2) setState(() => mapCovered = true);
+    final value = await Navigator.of(context).push<CitizenZone>(
+      MaterialPageRoute(
+        builder: (_) => ZoneScreen(initial: zone, geocode: widget.geocode),
+      ),
+    );
+    if (!current) return;
+    if (value != null) {
+      try {
+        writeZone(actor, value.encode());
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('La zona se conservará solo durante esta sesión.'),
+            ),
+          );
+        }
+      }
+    }
+    setState(() {
+      mapCovered = false;
+      if (value != null) {
+        zone = value;
+        zoneConfigured = true;
+        mapFocus = value.point;
+        selectedReport = null;
+      }
+    });
+  }
+
   void navigate(int value) {
+    if (value == 5) activityUnreadOnly = false;
     if (value == 4) {
       reports(create: true);
     } else {
@@ -212,7 +256,8 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
   }
 
   Widget homeNavigation() => DesignNavigation(
-    active: tab == 1 || tab == 6 ? 0 : tab,
+    unread: notificationIndicators ? unread : 0,
+    active: tab == 1 || tab == 6 || tab == 7 ? 0 : tab,
     onSelected: navigate,
   );
   Widget reportPreview(Map<String, dynamic> report) {
@@ -375,6 +420,20 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
   }
 
   bool mapMatches(Map<String, dynamic> report) {
+    if (zoneConfigured &&
+        report['latitude'] is num &&
+        report['longitude'] is num &&
+        const Distance().as(
+              LengthUnit.Kilometer,
+              zone.point,
+              LatLng(
+                (report['latitude'] as num).toDouble(),
+                (report['longitude'] as num).toDouble(),
+              ),
+            ) >
+            zone.radius) {
+      return false;
+    }
     final icon = categoryArtwork(
       '${report['category'] ?? report['description'] ?? ''}',
     ).$1;
@@ -407,7 +466,8 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
             bottomInset: mapCardHeight,
             controlTop: 82,
             reports: points.where(mapMatches).toList(),
-            point: mapFocus,
+            point: mapFocus ?? zone.point,
+            radiusKm: zoneConfigured ? zone.radius : null,
             onReportSelected: (r) => setState(() => selectedReport = r),
           ),
           Positioned(
@@ -608,7 +668,7 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
     notifications: notificationIndicators,
     onNotificationsChanged: (v) => setState(() => notificationIndicators = v),
     onReports: () => selectTab(1),
-    onLocation: () => selectTab(2),
+    onLocation: configureZone,
     onLogout: widget.auth.logout,
     onPrivacy: () => info(
       'Privacidad',
@@ -624,7 +684,7 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
     backgroundColor: tab == 0
         ? const Color(0xfff8fcfe)
         : const Color(0xfff4faff),
-    appBar: tab == 0 || tab == 1 || tab == 5 || tab == 6
+    appBar: tab == 0 || tab == 1 || tab == 5 || tab == 7 || tab == 6
         ? null
         : DesignHeader(
             const {
@@ -723,7 +783,17 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
           ),
           2 => mapCovered ? const SizedBox() : map(),
           3 => profile(),
+          7 => NotificationsScreen(
+            repository: widget.repository,
+            auth: widget.auth,
+            embedded: true,
+            onBack: () => selectTab(0),
+          ),
           5 => NotificationsScreen(
+            key: ValueKey(activityUnreadOnly),
+            onRead: () => unawaited(refreshUnread()),
+            initialUnreadOnly: activityUnreadOnly,
+            activity: true,
             repository: widget.repository,
             auth: widget.auth,
             embedded: true,

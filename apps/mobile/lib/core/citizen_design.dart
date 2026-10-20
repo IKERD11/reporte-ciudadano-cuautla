@@ -60,10 +60,12 @@ class DesignButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     this.arrow = false,
+    this.auth = false,
   });
   final String label;
   final VoidCallback? onPressed;
   final bool arrow;
+  final bool auth;
   @override
   Widget build(BuildContext context) => Opacity(
     opacity: onPressed == null ? .5 : 1,
@@ -72,38 +74,62 @@ class DesignButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(999),
       clipBehavior: Clip.antiAlias,
       child: Ink(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xff20a9ed), Color(0xff3156ee), Color(0xff8e35ef)],
+            colors: auth
+                ? const [
+                    Color(0xff20a9ed),
+                    Color(0xff176cef),
+                    Color(0xff16d6bd),
+                  ]
+                : const [
+                    Color(0xff20a9ed),
+                    Color(0xff3156ee),
+                    Color(0xff8e35ef),
+                  ],
           ),
         ),
         child: InkWell(
           onTap: onPressed,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 58),
+            constraints: BoxConstraints(minHeight: auth ? 70 : 58),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              padding: auth
+                  ? const EdgeInsets.fromLTRB(42, 10, 10, 10)
+                  : const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Flexible(
+                    fit: auth ? FlexFit.tight : FlexFit.loose,
                     child: Text(
                       label,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: auth ? 22 : 18,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
                   if (arrow) ...[
                     const SizedBox(width: 14),
-                    const Icon(
-                      Icons.arrow_forward,
-                      color: Colors.white,
-                      size: 25,
-                    ),
+                    if (auth)
+                      const CircleAvatar(
+                        radius: 23,
+                        backgroundColor: Colors.white,
+                        child: Icon(
+                          Icons.arrow_forward,
+                          color: Color(0xff1268e4),
+                          size: 22,
+                        ),
+                      )
+                    else
+                      const Icon(
+                        Icons.arrow_forward,
+                        color: Colors.white,
+                        size: 25,
+                      ),
                   ],
                 ],
               ),
@@ -120,8 +146,10 @@ class DesignNavigation extends StatelessWidget {
     super.key,
     required this.active,
     required this.onSelected,
+    this.unread = 0,
   });
   final int active;
+  final int unread;
   final ValueChanged<int> onSelected;
   @override
   Widget build(BuildContext context) => SafeArea(
@@ -161,7 +189,14 @@ class DesignNavigation extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        CitizenSticker(item.$2, size: item.$1 == 4 ? 52 : 32),
+                        Badge(
+                          isLabelVisible: item.$1 == 5 && unread > 0,
+                          label: Text(unread > 99 ? '99+' : '$unread'),
+                          child: CitizenSticker(
+                            item.$2,
+                            size: item.$1 == 4 ? 52 : 32,
+                          ),
+                        ),
                         const SizedBox(height: 5),
                         Text(
                           item.$3,

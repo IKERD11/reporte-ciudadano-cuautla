@@ -22,9 +22,11 @@ class ReportMap extends StatelessWidget {
     this.allow3D = false,
     this.bottomInset = 0,
     this.controlTop = 8,
+    this.radiusKm,
   });
   final double height, zoom, radius, bottomInset, controlTop;
   final bool allow3D;
+  final double? radiusKm;
   final LatLng? point;
   final ValueChanged<LatLng>? onSelected;
   final List<Map<String, dynamic>> reports;
@@ -42,6 +44,7 @@ class ReportMap extends StatelessWidget {
               : {'latitude': point!.latitude, 'longitude': point!.longitude},
           'editable': onSelected != null,
           'allow3D': allow3D && onSelected == null,
+          'radiusKm': radiusKm,
           'zoom': zoom, 'bottomInset': bottomInset, 'controlTop': controlTop,
           // Only account reports are accepted here. Demo fixtures belong in separate test/demo entrypoints.
           'reports': [

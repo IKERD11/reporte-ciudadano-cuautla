@@ -1,3 +1,4 @@
+import 'report_tracking_screen.dart';
 import '../../core/citizen_sticker.dart';
 import '../../core/address_search.dart';
 import '../../core/citizen_design.dart';
@@ -41,6 +42,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   int offset = 0;
   bool firstLoad = true;
   bool justCreated = false;
+  bool trackingCovered = false;
   List<Map<String, dynamic>> categories = [], reports = [];
   Map<String, dynamic>? detail;
   @override
@@ -449,6 +451,20 @@ class _ReportsScreenState extends State<ReportsScreen> {
         ),
       ),
       const SizedBox(height: 14),
+      DesignButton(
+        'Seguimiento del reporte',
+        onPressed: () async {
+          final report = detail!;
+          setState(() => trackingCovered = true);
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => ReportTrackingScreen(report: report),
+            ),
+          );
+          if (current) setState(() => trackingCovered = false);
+        },
+      ),
+      const SizedBox(height: 14),
       Row(
         children: [
           Expanded(
@@ -702,7 +718,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
               onCancel: load,
             )
           else if (detail != null)
-            (justCreated ? success() : reportDetail())
+            (trackingCovered
+                ? const SizedBox()
+                : justCreated
+                ? success()
+                : reportDetail())
           else
             reportList(),
         ],

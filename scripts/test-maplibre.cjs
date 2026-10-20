@@ -75,6 +75,15 @@ const server = http.createServer((req, res) => {
     await page.waitForFunction(() => testMaps[0].getPitch() === 0);
     await page.evaluate(() => handle.update({...testOptions, reports: [], bottomInset: 300}));
     assert.equal(await page.locator('.citizen-map-marker').count(), 0);
+    await page.evaluate(() => handle.update({...testOptions,reports:[],point:{latitude:18.8126,longitude:-98.9548},radiusKm:3}));
+    await page.waitForFunction(() => testMaps[0].getSource('citizen-zone')._data.features.length === 1);
+    assert.equal(await page.evaluate(() => testMaps[0].getSource('citizen-zone')._data.features[0].geometry.coordinates[0].length),81);
+    await page.evaluate(() => handle.update({...testOptions,reports:[],point:{latitude:18.8126,longitude:-98.9548},radiusKm:5}));
+    await page.waitForFunction(() => testMaps[0].getSource('citizen-zone')._data.features[0].geometry.coordinates[0][0][1] > 18.85);
+    const ring = await page.evaluate(() => testMaps[0].getSource('citizen-zone')._data.features[0].geometry.coordinates[0]);
+    assert.ok(Math.abs(ring[0][1]-18.8126)>0.04);
+    await page.evaluate(() => handle.update({...testOptions,reports:[],bottomInset:300}));
+    await page.waitForFunction(() => testMaps[0].getSource('citizen-zone')._data.features.length === 0);
     assert.equal(await page.locator('.citizen-map-demo').isVisible(), false);
     await page.setViewportSize({width: 320, height: 568});
     const footer = await page.locator('.citizen-map-attribution').boundingBox();
@@ -118,7 +127,8 @@ const server = http.createServer((req, res) => {
     assert.deepEqual(errors, []);
     console.log('PASS: Cuautla, 2D/3D, category click, demo labels, filter updates, mobile attribution, tap/drag, retry, disposal.');
     if (process.env.MAPLIBRE_LIVE === '1') {
-      const live = await context.newPage();
+      const liveContext = await browser.newContext({viewport:{width:390,height:844},ignoreHTTPSErrors:true});
+      const live = await liveContext.newPage();
       await setup(live);
       await live.evaluate(() => {
         window.handle = CitizenMapLibre.create(document.getElementById('map'), {allow3D: true, zoom: 16, reports: []}, {onState: state => testStates.push(state)});
@@ -127,11 +137,12 @@ const server = http.createServer((req, res) => {
       await live.getByRole('button', {name: 'Alternar vista 2D y 3D'}).click();
       await live.waitForFunction(() => testMaps[0].getPitch() > 54 && testMaps[0].areTilesLoaded());
       const buildings = await live.evaluate(() => testMaps[0].querySourceFeatures('openmaptiles', {sourceLayer: 'building'}).length);
+      assert.ok(buildings > 0, 'Real Cuautla building data must load');
       const out = path.join(root, 'output/figma-renovacion/maplibre-cuautla-3d.png');
       fs.mkdirSync(path.dirname(out), {recursive: true}); await live.screenshot({path: out});
       console.log(`PASS: live OpenFreeMap in Cuautla; ${buildings} building features loaded. Screenshot: ${out}`);
       await live.evaluate(() => handle.dispose());
-      await live.close();
+      await liveContext.close();
     }
   } finally { await browser.close(); server.close(); }
 })().catch(error => { console.error(error); server.close(); process.exitCode = 1; });

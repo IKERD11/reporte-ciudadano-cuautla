@@ -12,8 +12,13 @@ class CitizenHomeDashboard extends StatelessWidget {
     required this.onReports,
     required this.onNotifications,
     required this.onHelp,
+    this.onZone,
+    this.onActivity,
+    this.zoneAddress = 'Cuautla, Morelos',
   });
   final String name;
+  final String zoneAddress;
+  final VoidCallback? onZone, onActivity;
   final int unread;
   final VoidCallback onMenu,
       onReport,
@@ -185,7 +190,7 @@ class CitizenHomeDashboard extends StatelessWidget {
                             ),
                           ),
                           IconButton(
-                            onPressed: onNotifications,
+                            onPressed: onActivity ?? onNotifications,
                             tooltip: 'Notificaciones',
                             icon: Badge(
                               isLabelVisible: unread > 0,
@@ -241,10 +246,10 @@ class CitizenHomeDashboard extends StatelessWidget {
                   shadowColor: const Color(0x33125c8d),
                   borderRadius: BorderRadius.circular(22),
                   child: InkWell(
-                    onTap: onMap,
+                    onTap: onZone ?? onMap,
                     borderRadius: BorderRadius.circular(22),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 17,
                         vertical: 14,
                       ),
@@ -265,8 +270,8 @@ class CitizenHomeDashboard extends StatelessWidget {
                                 ),
                                 SizedBox(height: 3),
                                 Text(
-                                  'Cuautla, Morelos',
-                                  style: TextStyle(
+                                  zoneAddress,
+                                  style: const TextStyle(
                                     color: ink,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 17,

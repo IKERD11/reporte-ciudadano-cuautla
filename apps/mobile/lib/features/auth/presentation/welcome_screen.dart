@@ -66,10 +66,11 @@ class WelcomeScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 16, height: 1.5),
                 ),
                 const SizedBox(height: 30),
-                DesignButton('Comenzar', onPressed: onContinue, arrow: true),
-                TextButton(
+                DesignButton(
+                  'Comenzar',
                   onPressed: onContinue,
-                  child: const Text('Ya tengo una cuenta'),
+                  arrow: true,
+                  auth: true,
                 ),
                 const SizedBox(height: 16),
                 const Text(
