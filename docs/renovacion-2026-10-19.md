@@ -37,6 +37,8 @@ El propietario indicó que comprobó el acceso. No había una sesión autenticad
 
 Destino autorizado: https://ikerd11.github.io/reporte-ciudadano-app/ . Compilación Flutter web JavaScript con base y retorno públicos; empaquetado de entradas por hash para evitar que clientes reutilicen archivos de la entrega anterior. Solo se publica el paquete ciudadano; el panel administrativo se conserva.
 
-Publicación final: commit `7686d48`, ejecución Pages `39366236371` completada con éxito. Se comprobó HTTP 200 y contenido idéntico al paquete local para HTML, entrada Dart, bootstrap, puente/CSS del mapa y nuevos recursos representativos. Navegador público: bienvenida, acceso y recuperación visibles. Código principal: `8de1529`, con corrección adicional del empaquetador en la misma rama/PR.
+Publicación final: commit `43874c8`, ejecución Pages `39366775411` completada con éxito. Se comprobó HTTP 200 y contenido idéntico al paquete local para HTML, entrada Dart, bootstrap, puente/CSS del mapa y nuevos recursos representativos. Navegador público: bienvenida, acceso y recuperación visibles. Código principal: `8de1529`, con corrección adicional del empaquetador en la misma rama/PR.
 
 Se corrigió un defecto previo del empaquetado: Flutter sustituye su token de versión incluyendo comillas, lo que dejaba atributos sobrantes en HTML. Dos pruebas de regresión cubren tokens con/sin comillas, URLs válidas y hashes de los archivos. El puente final de mapas volvió a pasar las pruebas de navegador con datos reales de Cuautla después del último ajuste del radio.
+
+Último ajuste incluido en la entrega: cada flujo de autenticación reinicia su desplazamiento al abrirse. Se repitieron las 38 pruebas Flutter y el análisis sin incidencias; nueva compilación aprobada. Los 53 recursos originales también se verificaron individualmente en la URL pública, con HTTP 200 y contenido idéntico. Código del ajuste: `3ddf0ac`.
