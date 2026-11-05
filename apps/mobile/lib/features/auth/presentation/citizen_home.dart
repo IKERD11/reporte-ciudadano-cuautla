@@ -1,3 +1,4 @@
+import '../../../core/figma_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/app_config.dart';
 import '../../../core/citizen_push.dart';
@@ -652,6 +653,48 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
     if (current) await widget.auth.logout();
   }
 
+  void openFigmaScreen(String screen, String title) {
+    Navigator.of(context).push<void>(
+      DesignPageRoute(
+        builder: (_) => FigmaScreen(screen: screen, title: title),
+      ),
+    );
+  }
+
+  void openPendingScreens() {
+    Navigator.of(context).push<void>(
+      DesignPageRoute(
+        builder: (context) => DesignScaffold(
+          appBar: const DesignHeader('Pantallas en integración'),
+          body: ListView(
+            padding: const EdgeInsets.all(18),
+            children: [
+              const Text(
+                'Puedes revisar estas pantallas dentro de la app. Sus flujos todavía usan datos de muestra.',
+              ),
+              for (final item in const [
+                ('notifications', 'Bandeja de notificaciones'),
+                ('notificationSettings', 'Preferencias de notificaciones'),
+                ('privacy', 'Privacidad y seguridad'),
+                ('help', 'Ayuda y soporte'),
+                ('contacts', 'Contactos útiles'),
+                ('contactDetail', 'Detalle de contacto'),
+                ('sos', 'Flujo SOS'),
+                ('alertDetail', 'Detalle de alerta'),
+                ('changePassword', 'Cambiar contraseña'),
+              ])
+                ListTile(
+                  title: Text(item.$2),
+                  trailing: const CitizenIcon('chevron'),
+                  onTap: () => openFigmaScreen(item.$1, item.$2),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget profile() {
     loadProfilePhoto();
     return CitizenProfileDesign(
@@ -672,14 +715,9 @@ class _CitizenHomeState extends State<CitizenHome> with WidgetsBindingObserver {
       onReports: () => selectTab(1),
       onLocation: configureZone,
       onLogout: signOutWithPushCleanup,
-      onPrivacy: () => info(
-        'Privacidad',
-        'Tus reportes y fotografías son privados. Usa datos de prueba durante el piloto. La captura de INE real sigue deshabilitada.',
-      ),
-      onHelp: () => info(
-        'Ayuda y soporte',
-        'Piloto de Cuautla, sin atención municipal real. Consulta el estado de tus reportes y sus avisos desde la app. No sustituye los servicios de emergencia.',
-      ),
+      onPrivacy: () => openFigmaScreen('privacy', 'Privacidad y seguridad'),
+      onHelp: () => openFigmaScreen('help', 'Ayuda y soporte'),
+      onPendingScreens: openPendingScreens,
     );
   }
 

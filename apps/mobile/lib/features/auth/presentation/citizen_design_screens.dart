@@ -156,6 +156,7 @@ class CitizenProfileDesign extends StatelessWidget {
     required this.onPrivacy,
     required this.onHelp,
     required this.onLogout,
+    this.onPendingScreens,
     required this.notifications,
     required this.onNotificationsChanged,
   });
@@ -163,6 +164,7 @@ class CitizenProfileDesign extends StatelessWidget {
   final bool notifications;
   final ValueChanged<bool> onNotificationsChanged;
   final VoidCallback onReports, onLocation, onPrivacy, onHelp, onLogout;
+  final VoidCallback? onPendingScreens;
   Widget row(
     String label,
     Widget icon, {
@@ -360,6 +362,12 @@ class CitizenProfileDesign extends StatelessWidget {
               const ProfileMenuIcon(column: 1, row: 1),
               onTap: onHelp,
             ),
+            if (onPendingScreens != null)
+              row(
+                'Pantallas en integración',
+                const CitizenIcon('clipboard'),
+                onTap: onPendingScreens,
+              ),
             row(
               'Cerrar sesión',
               const ProfileMenuIcon(column: 2, row: 1),

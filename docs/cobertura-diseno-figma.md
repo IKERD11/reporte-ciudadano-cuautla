@@ -9,3 +9,7 @@ La aplicación publicada sigue siendo `apps/mobile`. La referencia React puede c
 - Sin pantalla propia en Flutter (6): detalle de contacto, SOS, bandeja de notificaciones, preferencias de notificaciones, privacidad y seguridad, ayuda y soporte.
 
 No sustituir la versión publicada con el ZIP sin conectar primero el contrato real de reportes, la comunidad y el historial. La exportación inicia con incidentes de demostración y navega a éxito al confirmar sin enviar un reporte. Además usa una ruta de notificaciones anterior a la desplegada. La corrección del backend permanece en `supabase/functions/server`, fuera del directorio de referencia.
+
+## Acceso desde la aplicación unificada
+
+La aplicación web incorpora las nueve pantallas pendientes o parciales en Perfil → Pantallas en integración. Privacidad y Ayuda también abren directamente sus pantallas. Los flujos que ya trabajan con datos reales mantienen sus rutas Flutter. Las pantallas anexadas reutilizan la compilación del diseño en un marco interno con aviso de datos de muestra; no usan autenticación ni escrituras de producción. El acceso directo anterior de revisión redirige a la aplicación principal.
