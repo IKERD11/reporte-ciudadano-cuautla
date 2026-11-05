@@ -1,0 +1,10 @@
+{
+  "description": "Allows users to upload entire folders to efficiently manage and share project files directly from their IDE workspace.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
