@@ -21,7 +21,7 @@ class SearchRepository implements ReportRepository {
 
 void main() {
   testWidgets(
-    'busca solo por botón, descarta respuesta antigua y coloca resultado elegido',
+    'dirección manual consulta solo al guardar y coloca coordenadas reales',
     (tester) async {
       final repo = SearchRepository();
       await tester.pumpWidget(
@@ -32,7 +32,7 @@ void main() {
                 categories: const [
                   {
                     'id': 'test',
-                    'name': 'Servicios',
+                    'name': 'Alumbrado público',
                     'requires_location': true,
                     'requires_photo': false,
                     'subcategories': [],
@@ -40,6 +40,12 @@ void main() {
                   },
                 ],
                 repository: repo,
+                geocode: (q) async {
+                  final r = await repo.call('geocode', {'query': q});
+                  return (r['results'] as List)
+                      .map((v) => Map<String, dynamic>.from(v))
+                      .toList();
+                },
                 onCreated: (_) {},
                 onCancel: () {},
               ),
@@ -47,28 +53,30 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.text('Servicios'));
-      await tester.tap(find.text('Continuar'));
+      await tester.tap(find.text('Alumbrado público'));
+      await tester.ensureVisible(find.text('Siguiente'));
+      await tester.tap(find.text('Siguiente'));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextFormField), 'Calle pública uno');
+      await tester.ensureVisible(find.text('Centro, Cuautla'));
+      await tester.tap(find.text('Centro, Cuautla'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('manual-address-0')),
+        'Calle pública',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('manual-address-2')),
+        'Centro',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('manual-address-3')),
+        '62740',
+      );
       expect(repo.pending, isEmpty);
-      await tester.tap(find.text('Buscar dirección en el mapa'));
+      await tester.ensureVisible(find.text('Usar dirección'));
+      await tester.tap(find.text('Usar dirección'));
       await tester.pump();
-      await tester.enterText(find.byType(TextFormField), 'Calle pública dos');
-      repo.pending.first.complete({
-        'results': [
-          {
-            'address': 'Resultado antiguo',
-            'latitude': 18.81,
-            'longitude': -98.95,
-          },
-        ],
-      });
-      await tester.pumpAndSettle();
-      expect(find.text('Resultado antiguo'), findsNothing);
-      await tester.tap(find.text('Buscar dirección en el mapa'));
-      await tester.pump();
-      repo.pending.last.complete({
+      repo.pending.single.complete({
         'results': [
           {
             'address': 'Centro, Cuautla',
@@ -78,13 +86,10 @@ void main() {
         ],
       });
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Centro, Cuautla'));
-      await tester.tap(find.text('Centro, Cuautla'));
-      await tester.pumpAndSettle();
       final map = tester.widget<ReportMap>(find.byType(ReportMap));
       expect(map.point?.latitude, 18.81);
       expect(map.point?.longitude, -98.95);
-      expect(find.text('Ubicación seleccionada en el mapa'), findsOneWidget);
+      expect(find.textContaining('Calle pública'), findsWidgets);
     },
   );
 }

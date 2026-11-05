@@ -14,14 +14,16 @@ void main() {
     await tester.ensureVisible(find.text('Comenzar'));
     await tester.tap(find.text('Comenzar'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Registrarse'));
+    await tester.ensureVisible(find.text('Crear cuenta'));
+    await tester.tap(find.text('Crear cuenta'));
     await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).at(0), 'Ana Pérez');
     await tester.enterText(
-      find.byType(TextFormField).at(0),
+      find.byType(TextFormField).at(1),
       'citizen@example.test',
     );
-    await tester.enterText(find.byType(TextFormField).at(1), 'short');
-    await tester.enterText(find.byType(TextFormField).at(2), 'different');
+    await tester.enterText(find.byType(TextFormField).at(2), 'short');
+    await tester.enterText(find.byType(TextFormField).at(3), 'different');
     await tester.ensureVisible(find.text('Crear cuenta'));
     await tester.tap(find.text('Crear cuenta'));
     await tester.pumpAndSettle();
@@ -40,12 +42,8 @@ void main() {
     await tester.pumpWidget(CitizenApp(controller: AuthController(repository)));
     await tester.pumpAndSettle();
     expect(find.text('Ana Pérez'), findsOneWidget);
-    expect(
-      find.text('Pendiente · INE real deshabilitada'),
-      findsOneWidget,
-    );
+    expect(find.text('Pendiente · INE real deshabilitada'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await repository.events.close();
   });
 }
-

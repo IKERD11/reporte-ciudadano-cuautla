@@ -59,3 +59,8 @@ abstract interface class AuthRepository {
     String? phone,
   );
 }
+
+/// Optional account operations, separate from the municipal profile contract.
+abstract interface class AccountEmailRepository {
+  Future<void> changeEmail(String email);
+}

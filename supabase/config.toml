@@ -424,3 +424,8 @@ verify_jwt = false
 [functions.report-pilot]
 # JWT verificado con Auth.getUser y sesión activa comprobada en PostgreSQL.
 verify_jwt = false
+
+# This function validates the bearer token and permissions in its own middleware.
+[functions.server]
+verify_jwt = false
+entrypoint = "./functions/server/index.ts"

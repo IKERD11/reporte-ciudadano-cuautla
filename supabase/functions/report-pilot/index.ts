@@ -19,13 +19,20 @@ Deno.serve(async request=>{
   try{session=JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).session_id;}catch{throw new PilotError('Sesión inválida.',401);}
   if(!uuid(session))throw new PilotError('Sesión inválida.',401);
   const b=await readBody(request);
-  if(!['context','submit','list','detail','image','geocode'].includes(b.action))throw new PilotError('Acción inválida.');
+  if(!['context','submit','list','detail','image','geocode','community_list','community_detail'].includes(b.action))throw new PilotError('Acción inválida.');
   if(b.report_id!=null&&!uuid(b.report_id))throw new PilotError('Reporte inválido.');
   const rpc=async(action:string,payload:unknown={})=>{
    const {data,error}=await admin.rpc('report_pilot_service',{p_actor:auth.user!.id,p_session:session,p_action:action,p_key:b.request_key??null,p_payload:payload,p_report:b.report_id??null,p_offset:b.offset??0,p_filter:b.filter??'ALL'});
    if(error)throw new PilotError(error.code==='42501'?'Acceso no autorizado o solicitud vencida.':error.code==='54000'?'Alcanzaste cinco reportes de prueba en 24 horas.':error.code==='22023'?error.message:'Revisa los datos del reporte.',error.code==='42501'?403:error.code==='54000'?429:400);
    return data;
   };
+  if(b.action==='community_list'||b.action==='community_detail'){
+   const {data,error}=await admin.rpc('community_report_service',{
+    p_actor:auth.user.id,p_session:session,p_action:b.action==='community_list'?'list':'detail',
+    p_report:b.report_id??null,p_offset:b.offset??0,p_filter:b.filter??'ALL'});
+   if(error)throw new PilotError(error.code==='42501'?'Reporte no disponible.':'Consulta inválida.',error.code==='42501'?403:400);
+   return reply(data);
+  }
   if(b.action==='geocode'){
    if(Deno.env.get('GEOCODING_DISABLED')==='true')throw new PilotError('Búsqueda temporalmente deshabilitada. Usa el mapa.',503);
    const context=await rpc('context');if(!context.enabled)throw new PilotError('Piloto no habilitado.',403);

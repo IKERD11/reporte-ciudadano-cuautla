@@ -1,4 +1,6 @@
+import '../../../core/citizen_sticker.dart';
 import 'welcome_screen.dart';
+import '../../../core/citizen_design.dart';
 import '../../notifications/notifications_screen.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -9,6 +11,7 @@ import 'citizen_home.dart';
 import '../../identity/identity_screen.dart';
 import '../../identity/identity_repository.dart';
 import '../../reports/report_repository.dart';
+import '../../reports/report_address_search.dart';
 import '../application/auth_controller.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -28,6 +31,8 @@ class _AuthScreenState extends State<AuthScreen> {
   final phone = TextEditingController();
   bool register = false, forgot = false, editing = false, obscure = true;
   bool welcomed = false;
+  bool repeatObscure = true;
+  bool accepted = false;
   String? municipality;
   AuthStage? previous;
   AuthController get auth => widget.controller;
@@ -40,6 +45,12 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void changed() {
     if (previous != auth.stage) {
+      if (auth.stage == AuthStage.profileSetup &&
+          first.text.trim().contains(' ')) {
+        final parts = first.text.trim().split(RegExp(r'\s+'));
+        first.text = parts.first;
+        last.text = parts.skip(1).join(' ');
+      }
       password.clear();
       repeat.clear();
       editing = false;
@@ -73,73 +84,183 @@ class _AuthScreenState extends State<AuthScreen> {
     bool optional = false,
     int max = 160,
   }) => Padding(
-    padding: const EdgeInsets.only(bottom: 18),
-    child: TextFormField(
-      controller: c,
-      enabled: !auth.busy,
-      obscureText: secret && obscure,
-      autocorrect: !secret,
-      enableSuggestions: !secret,
-      maxLength: secret ? null : max,
-      keyboardType: c == email
-          ? TextInputType.emailAddress
-          : c == phone
-          ? TextInputType.phone
-          : TextInputType.text,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(
-          secret
-              ? Icons.lock_outline
-              : c == email
-              ? Icons.person_outline
-              : c == phone
-              ? Icons.phone_outlined
-              : Icons.badge_outlined,
-          size: 20,
-        ),
-        counterText: '',
-        suffixIcon: secret && c == password
-            ? IconButton(
-                tooltip: obscure ? 'Mostrar contraseña' : 'Ocultar contraseña',
-                onPressed: () => setState(() => obscure = !obscure),
-                icon: Icon(
-                  obscure
-                      ? Icons.visibility_outlined
-                      : Icons.visibility_off_outlined,
+    padding: EdgeInsets.only(
+      bottom: auth.stage == AuthStage.signedOut ? 17 : 18,
+    ),
+    child: Container(
+      constraints:
+          auth.stage == AuthStage.signedOut || auth.stage == AuthStage.recovery
+          ? BoxConstraints(minHeight: register ? 68 : 78)
+          : null,
+      decoration:
+          auth.stage == AuthStage.signedOut || auth.stage == AuthStage.recovery
+          ? BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(register ? 18 : 19),
+              border: Border.all(color: const Color(0xffdce8f3)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0d184367),
+                  blurRadius: 14,
+                  offset: Offset(0, 5),
                 ),
-              )
+              ],
+            )
+          : null,
+      child: TextFormField(
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0,
+          color: Color(0xff173967),
+        ),
+        controller: c,
+        enabled: !auth.busy,
+        obscureText: secret && (c == repeat ? repeatObscure : obscure),
+        autofillHints: c == email
+            ? const [AutofillHints.email]
+            : secret
+            ? [
+                register || auth.stage == AuthStage.recovery
+                    ? AutofillHints.newPassword
+                    : AutofillHints.password,
+              ]
             : null,
+        autocorrect: !secret,
+        enableSuggestions: !secret,
+        maxLength: secret ? null : max,
+        keyboardType: c == email
+            ? TextInputType.emailAddress
+            : c == phone
+            ? TextInputType.phone
+            : TextInputType.text,
+        decoration: InputDecoration(
+          labelText: label,
+          floatingLabelStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: Color(0xff244c7f),
+          ),
+          labelStyle: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0,
+            color: Color(0xff244c7f),
+          ),
+          filled:
+              !(auth.stage == AuthStage.signedOut ||
+                  auth.stage == AuthStage.recovery),
+          border:
+              auth.stage == AuthStage.signedOut ||
+                  auth.stage == AuthStage.recovery
+              ? InputBorder.none
+              : null,
+          enabledBorder:
+              auth.stage == AuthStage.signedOut ||
+                  auth.stage == AuthStage.recovery
+              ? InputBorder.none
+              : null,
+          focusedBorder:
+              auth.stage == AuthStage.signedOut ||
+                  auth.stage == AuthStage.recovery
+              ? InputBorder.none
+              : null,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 20,
+          ),
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          hintText: c == email
+              ? 'Tu correo electrónico'
+              : secret
+              ? 'Tu contraseña'
+              : null,
+          prefixIconConstraints:
+              auth.stage == AuthStage.signedOut && !register && !forgot
+              ? const BoxConstraints(minWidth: 67, maxWidth: 67)
+              : null,
+          prefixIcon: Padding(
+            padding: EdgeInsets.only(
+              left: auth.stage == AuthStage.signedOut && !register && !forgot
+                  ? 16
+                  : 0,
+            ),
+            child: Align(
+              widthFactor: 1,
+              heightFactor: 1,
+              alignment:
+                  auth.stage == AuthStage.signedOut && !register && !forgot
+                  ? Alignment.centerLeft
+                  : Alignment.center,
+              child: CitizenIcon(
+                secret
+                    ? 'lock'
+                    : c == email
+                    ? 'mail'
+                    : c == phone
+                    ? 'phone'
+                    : 'user',
+                size: auth.stage == AuthStage.signedOut && !register && !forgot
+                    ? 27
+                    : 21,
+              ),
+            ),
+          ),
+          counterText: '',
+          suffixIcon: secret
+              ? IconButton(
+                  tooltip: (c == repeat ? repeatObscure : obscure)
+                      ? 'Mostrar contraseña'
+                      : 'Ocultar contraseña',
+                  onPressed: () => setState(() {
+                    if (c == repeat) {
+                      repeatObscure = !repeatObscure;
+                    } else {
+                      obscure = !obscure;
+                    }
+                  }),
+                  color: const Color(0xff0969df),
+                  icon: auth.stage == AuthStage.recovery
+                      ? DesignPasswordEye(
+                          visible: !(c == repeat ? repeatObscure : obscure),
+                        )
+                      : const CitizenIcon('eye', size: 21),
+                )
+              : null,
+        ),
+        validator: (value) {
+          final v = value ?? '';
+          if (!optional && v.trim().isEmpty) return 'Completa este campo.';
+          if (c == email &&
+              !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v.trim())) {
+            return 'Escribe un correo válido.';
+          }
+          if (c == password &&
+              (register || auth.stage == AuthStage.recovery) &&
+              v.length < 12) {
+            return 'Usa al menos 12 caracteres.';
+          }
+          if (c == repeat && v != password.text) {
+            return 'Las contraseñas no coinciden.';
+          }
+          if (c == phone &&
+              v.trim().isNotEmpty &&
+              !RegExp(r'^\+[1-9][0-9]{7,14}$').hasMatch(v.trim())) {
+            return 'Incluye el código de país, por ejemplo +525512345678.';
+          }
+          return null;
+        },
       ),
-      validator: (value) {
-        final v = value ?? '';
-        if (!optional && v.trim().isEmpty) return 'Completa este campo.';
-        if (c == email &&
-            !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v.trim())) {
-          return 'Escribe un correo válido.';
-        }
-        if (c == password &&
-            (register || auth.stage == AuthStage.recovery) &&
-            v.length < 12) {
-          return 'Usa al menos 12 caracteres.';
-        }
-        if (c == repeat && v != password.text) {
-          return 'Las contraseñas no coinciden.';
-        }
-        if (c == phone &&
-            v.trim().isNotEmpty &&
-            !RegExp(r'^\+[1-9][0-9]{7,14}$').hasMatch(v.trim())) {
-          return 'Incluye el código de país, por ejemplo +525512345678.';
-        }
-        return null;
-      },
     ),
   );
   Widget button(
     String title,
     Future<void> Function() action, {
     bool validate = true,
-  }) => FilledButton(
+  }) => DesignButton(
+    title,
+    arrow: true,
+    auth: auth.stage == AuthStage.signedOut || auth.stage == AuthStage.recovery,
     onPressed: auth.busy
         ? null
         : () async {
@@ -149,21 +270,49 @@ class _AuthScreenState extends State<AuthScreen> {
             repeat.clear();
             await task;
           },
-    child: Text(title),
   );
   Widget heading(String title, String subtitle) => Padding(
-    padding: const EdgeInsets.only(bottom: 28),
+    padding: EdgeInsets.only(
+      bottom: auth.stage == AuthStage.signedOut
+          ? register
+                ? 20
+                : 30
+          : 28,
+    ),
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment:
+          auth.stage == AuthStage.signedOut || auth.stage == AuthStage.recovery
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: Theme.of(
-            context,
-          ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
+          textAlign:
+              auth.stage == AuthStage.signedOut ||
+                  auth.stage == AuthStage.recovery
+              ? TextAlign.center
+              : TextAlign.start,
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w800,
+            fontSize: register ? 31 : 32,
+            letterSpacing: register ? -1.55 : -1.6,
+            height: 1.12,
+          ),
         ),
         const SizedBox(height: 12),
-        Text(subtitle, style: const TextStyle(height: 1.5)),
+        Text(
+          subtitle,
+          textAlign:
+              auth.stage == AuthStage.signedOut ||
+                  auth.stage == AuthStage.recovery
+              ? TextAlign.center
+              : TextAlign.start,
+          style: const TextStyle(
+            height: 1.45,
+            fontSize: 14,
+            color: Color(0xff6a85a6),
+          ),
+        ),
       ],
     ),
   );
@@ -206,12 +355,15 @@ class _AuthScreenState extends State<AuthScreen> {
       case AuthStage.recovery:
         return [
           heading(
-            'Crea una nueva contraseña',
+            'Nueva contraseña',
             'Al guardarla, cerraremos las sesiones y podrás entrar de nuevo.',
           ),
           field('Nueva contraseña', password, secret: true),
           field('Repite la contraseña', repeat, secret: true),
-          button('Guardar contraseña', () => auth.savePassword(password.text)),
+          button(
+            'Restablecer contraseña',
+            () => auth.savePassword(password.text),
+          ),
           TextButton(
             onPressed: auth.busy ? null : auth.logout,
             child: const Text('Cancelar y cerrar sesión'),
@@ -294,8 +446,8 @@ class _AuthScreenState extends State<AuthScreen> {
           const Center(
             child: CircleAvatar(
               radius: 42,
-              backgroundColor: Color(0xff352557),
-              child: Icon(Icons.person, size: 56, color: navy),
+              backgroundColor: Color(0xffedf5fc),
+              child: CitizenSticker('user', size: 80),
             ),
           ),
           const SizedBox(height: 16),
@@ -311,9 +463,9 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
           const SizedBox(height: 28),
           ListTile(
-            leading: const Icon(Icons.person_outline),
+            leading: const CitizenIcon('user'),
             title: const Text('Mis datos'),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const CitizenIcon('chevron', strokeWidth: 2.4),
             onTap: () => setState(() {
               first.text = profile.firstName;
               last.text = profile.lastName;
@@ -323,26 +475,26 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.lock_outline),
+            leading: const CitizenIcon('lock'),
             title: const Text('Cambiar contraseña'),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const CitizenIcon('chevron', strokeWidth: 2.4),
             onTap: auth.busy ? null : () => auth.reset(auth.account!.email),
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.verified_user_outlined),
+            leading: const CitizenIcon('shield'),
             title: const Text('Verificación de identidad'),
             subtitle: Text(
               profile.identityStatus == 'PENDING'
                   ? 'Pendiente · INE real deshabilitada'
                   : profile.identityStatus,
             ),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const CitizenIcon('chevron', strokeWidth: 2.4),
             onTap: !AppConfig.isConfigured
                 ? null
                 : () => Navigator.push(
                     context,
-                    MaterialPageRoute(
+                    DesignPageRoute(
                       builder: (_) => IdentityScreen(
                         repository: SupabaseIdentityRepository(
                           Supabase.instance.client,
@@ -354,11 +506,11 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.notifications_outlined),
+            leading: const CitizenIcon('bell'),
             title: const Text('Notificaciones'),
             subtitle: const Text('Consulta los cambios de tus reportes'),
             onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
+              DesignPageRoute(
                 builder: (_) => NotificationsScreen(
                   repository: SupabaseReportRepository(
                     Supabase.instance.client,
@@ -370,9 +522,9 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.help_outline),
+            leading: const CitizenIcon('help'),
             title: const Text('Ayuda y soporte'),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const CitizenIcon('chevron', strokeWidth: 2.4),
             onTap: () => notice(
               'Ayuda y soporte',
               'Crea un reporte de prueba, elige una categoría, marca su ubicación y agrega los detalles. Puedes consultar el folio y estado en Mis reportes. Esta plataforma no sustituye a los servicios de emergencia.',
@@ -382,7 +534,7 @@ class _AuthScreenState extends State<AuthScreen> {
           ListTile(
             leading: const Icon(Icons.description_outlined),
             title: const Text('Términos y privacidad'),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const CitizenIcon('chevron', strokeWidth: 2.4),
             onTap: () => notice(
               'Condiciones del piloto',
               'Este entorno es exclusivamente de prueba, sin atención municipal real. No incluyas documentos ni datos personales en los reportes. El aviso institucional y los términos definitivos están pendientes de aprobación.',
@@ -390,7 +542,7 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.info_outline),
+            leading: const CitizenIcon('help'),
             title: const Text('Acerca de'),
             onTap: () => notice(
               'Reporte Ciudadano',
@@ -399,30 +551,115 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.logout),
+            leading: const CitizenIcon('logout'),
             title: const Text('Cerrar sesión'),
             onTap: auth.busy ? null : auth.logout,
           ),
         ];
       case AuthStage.signedOut:
         return [
-          if (forgot || register)
-            heading(
-              forgot
-                  ? 'Recupera tu acceso'
-                  : register
-                  ? 'Crea tu cuenta'
-                  : 'Bienvenido a tu comunidad',
-              forgot
-                  ? 'Te enviaremos un enlace para elegir una nueva contraseña.'
-                  : register
-                  ? 'Tu participación comienza con una cuenta segura.'
-                  : 'Inicia sesión para preparar tu perfil ciudadano.',
-            ),
+          heading(
+            forgot
+                ? 'Recupera tu cuenta'
+                : register
+                ? 'Únete a Ciudad Segura'
+                : '¡Qué gusto verte!',
+            forgot
+                ? 'Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.'
+                : register
+                ? 'Crea tu cuenta y conecta con tu comunidad.'
+                : 'Inicia sesión para seguir cuidando tu comunidad.',
+          ),
+          if (register && !forgot) field('Nombre completo', first, max: 120),
           field('Correo electrónico', email, max: 254),
           if (!forgot) field('Contraseña', password, secret: true),
           if (register && !forgot)
             field('Repite la contraseña', repeat, secret: true),
+          if (register && !forgot) ...[
+            const Text(
+              'Mínimo 12 caracteres para proteger tu cuenta.',
+              style: TextStyle(fontSize: 12),
+            ),
+            FormField<bool>(
+              validator: (_) => accepted
+                  ? null
+                  : 'Acepta las condiciones del piloto para continuar.',
+              builder: (state) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    value: accepted,
+                    onChanged: auth.busy
+                        ? null
+                        : (v) => setState(() {
+                            accepted = v ?? false;
+                            state.didChange(accepted);
+                          }),
+                    title: const Text(
+                      'Acepto los términos y el aviso de privacidad del piloto',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text('Condiciones del piloto'),
+                        content: const Text(
+                          'Entorno de prueba, sin atención municipal real. Usa datos sintéticos y evita datos personales en reportes. Tus reportes y evidencias son privados. Las INE reales siguen deshabilitadas. Los términos institucionales definitivos están pendientes de aprobación.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cerrar'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    child: const Text('Leer términos y privacidad'),
+                  ),
+                  if (state.errorText != null)
+                    Text(
+                      state.errorText!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 12,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+          if (!register && !forgot)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 23),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    minimumSize: Size.zero,
+                    padding: EdgeInsets.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    textStyle: const TextStyle(
+                      fontFamily: 'Manrope',
+                      fontSize: 12,
+                      height: 1.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  onPressed: auth.busy
+                      ? null
+                      : () => setState(() {
+                          forgot = true;
+                          password.clear();
+                          auth.clearMessage();
+                        }),
+                  child: const Text('¿Olvidaste tu contraseña?'),
+                ),
+              ),
+            ),
           button(
             forgot
                 ? 'Enviar enlace'
@@ -435,18 +672,34 @@ class _AuthScreenState extends State<AuthScreen> {
                 ? auth.register(email.text, password.text)
                 : auth.login(email.text, password.text),
           ),
-          if (!register && !forgot)
-            TextButton(
-              onPressed: auth.busy
-                  ? null
-                  : () => setState(() {
-                      forgot = true;
-                      password.clear();
-                      auth.clearMessage();
-                    }),
-              child: const Text('Olvidé mi contraseña'),
+          const SizedBox(height: 35),
+          const Divider(height: 1, color: Color(0xffbedbf0)),
+          const SizedBox(height: 27),
+          Text(
+            forgot
+                ? '¿Ya recuerdas tu contraseña?'
+                : register
+                ? '¿Ya tienes cuenta?'
+                : '¿Aún no tienes cuenta?',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 13,
+              height: 1.5,
+              color: Color(0xff6a85a6),
             ),
+          ),
           TextButton(
+            style: TextButton.styleFrom(
+              minimumSize: Size.zero,
+              padding: const EdgeInsets.only(top: 6),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              textStyle: const TextStyle(
+                fontFamily: 'Manrope',
+                fontSize: 15,
+                height: 1.5,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
             onPressed: auth.busy
                 ? null
                 : () => setState(() {
@@ -459,46 +712,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     repeat.clear();
                     auth.clearMessage();
                   }),
-            child: Text(
-              forgot || register
-                  ? 'Ya tengo cuenta · Iniciar sesión'
-                  : 'Soy nuevo · Crear una cuenta',
-            ),
-          ),
-          const Divider(height: 32),
-          if (!forgot && !register) ...[
-            const Text(
-              'Otros accesos · aún no habilitados',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: muted, fontSize: 11),
-            ),
-            const SizedBox(height: 12),
-            const Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(onPressed: null, child: Text('Google')),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: null,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.apple),
-                        SizedBox(width: 6),
-                        Text('Apple'),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-          ],
-          const Text(
-            'Piloto gratuito · El correo de confirmación está limitado a las direcciones autorizadas del equipo.',
-            style: TextStyle(fontSize: 12, height: 1.5),
+            child: Text(forgot || register ? 'Inicia sesión' : 'Crear cuenta'),
           ),
         ];
     }
@@ -526,100 +740,166 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     if (auth.stage == AuthStage.ready && AppConfig.isConfigured) {
+      final reports = SupabaseReportRepository(Supabase.instance.client);
       return CitizenHome(
         auth: auth,
-        repository: SupabaseReportRepository(Supabase.instance.client),
+        repository: reports,
+        geocode: ReportAddressSearch(reports).search,
         profileBuilder: profileForm,
       );
     }
     if (auth.stage == AuthStage.signedOut && !welcomed) {
       return WelcomeScreen(onContinue: () => setState(() => welcomed = true));
     }
-    return Scaffold(
+    return DesignScaffold(
+      surface: DesignSurface.auth,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         foregroundColor: navy,
         leading: auth.stage == AuthStage.signedOut
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => setState(() {
-                  welcomed = false;
-                  register = false;
-                  forgot = false;
-                }),
+            ? Transform.translate(
+                offset: const Offset(15, 20),
+                child: IconButton(
+                  icon: const CitizenIcon('arrow-left', strokeWidth: 2.4),
+                  onPressed: () => setState(() {
+                    if (register || forgot) {
+                      register = false;
+                      forgot = false;
+                    } else {
+                      welcomed = false;
+                    }
+                    password.clear();
+                    repeat.clear();
+                    auth.clearMessage();
+                  }),
+                ),
               )
             : null,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (auth.stage == AuthStage.signedOut) ...[
-                    const CitizenBrand(),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Inicia sesión o crea tu cuenta',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: muted, fontSize: 12),
-                    ),
-                    const SizedBox(height: 24),
-                    if (!forgot)
-                      Row(
+      body: DesignScreenEntrance(
+        key: ValueKey('${auth.stage}-$register-$forgot'),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            key: ValueKey('auth-${auth.stage}-$register-$forgot'),
+            padding: EdgeInsets.fromLTRB(
+              auth.stage == AuthStage.recovery ? 27 : 25,
+              register ? 0 : 10,
+              auth.stage == AuthStage.recovery ? 27 : 25,
+              12,
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (auth.stage == AuthStage.signedOut ||
+                        auth.stage == AuthStage.recovery) ...[
+                      if (auth.stage == AuthStage.recovery)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 26),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/renewal/auth/logo.webp',
+                                width: 29,
+                                height: 29,
+                              ),
+                              const SizedBox(width: 10),
+                              const Text(
+                                'Ciudad Segura',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xff243247),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      SizedBox(
+                        height: register
+                            ? 224
+                            : auth.stage == AuthStage.recovery
+                            ? 249
+                            : 232,
+                        child: LayoutBuilder(
+                          builder: (_, limits) {
+                            final width = register
+                                ? 320.0
+                                : auth.stage == AuthStage.recovery
+                                ? (limits.maxWidth * .72).clamp(0.0, 305.0)
+                                : 300.0;
+                            final height = register
+                                ? 232.0
+                                : auth.stage == AuthStage.recovery
+                                ? 245.0
+                                : 240.0;
+                            return OverflowBox(
+                              alignment: Alignment.topCenter,
+                              minWidth: width,
+                              maxWidth: width,
+                              minHeight: height,
+                              maxHeight: height,
+                              child: DesignDropShadow(
+                                blur: 18,
+                                offset: const Offset(0, 13),
+                                color: const Color(0x1f105cc4),
+                                child: Image.asset(
+                                  'assets/renewal/auth/${auth.stage == AuthStage.recovery
+                                      ? 'reset'
+                                      : forgot
+                                      ? 'recovery'
+                                      : register
+                                      ? 'people'
+                                      : 'lock'}.webp',
+                                  width: width,
+                                  height: height,
+                                  fit: BoxFit.contain,
+                                  excludeFromSemantics: true,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      if (!register && auth.stage != AuthStage.recovery)
+                        const SizedBox(height: 5),
+                      if (!register && auth.stage != AuthStage.recovery)
+                        const Text(
+                          'Ciudad Segura',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: navy,
+                            fontSize: 16,
+                            height: 1.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      SizedBox(height: register ? 5 : 2),
+                    ],
+                    Form(
+                      key: form,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Expanded(
-                            child: register
-                                ? TextButton(
-                                    onPressed: () =>
-                                        setState(() => register = false),
-                                    child: const Text('Iniciar sesión'),
-                                  )
-                                : FilledButton(
-                                    onPressed: () {},
-                                    child: const Text('Iniciar sesión'),
-                                  ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: register
-                                ? FilledButton(
-                                    onPressed: () {},
-                                    child: const Text('Registrarse'),
-                                  )
-                                : OutlinedButton(
-                                    onPressed: () =>
-                                        setState(() => register = true),
-                                    child: const Text('Registrarse'),
-                                  ),
-                          ),
+                          ...content(),
+                          if (auth.busy) const LinearProgressIndicator(),
+                          if (auth.message != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 18),
+                              child: Semantics(
+                                liveRegion: true,
+                                child: Text(auth.message!),
+                              ),
+                            ),
                         ],
                       ),
+                    ),
                     const SizedBox(height: 24),
                   ],
-                  Form(
-                    key: form,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        ...content(),
-                        if (auth.busy) const LinearProgressIndicator(),
-                        if (auth.message != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 18),
-                            child: Semantics(
-                              liveRegion: true,
-                              child: Text(auth.message!),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
+                ),
               ),
             ),
           ),

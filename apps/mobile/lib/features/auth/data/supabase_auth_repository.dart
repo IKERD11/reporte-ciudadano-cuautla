@@ -2,7 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/app_config.dart';
 import '../domain/auth_repository.dart';
 
-class SupabaseAuthRepository implements AuthRepository {
+class SupabaseAuthRepository implements AuthRepository, AccountEmailRepository {
   SupabaseAuthRepository(this.client);
   final SupabaseClient client;
   Account? _account(User? user) => user == null
@@ -52,6 +52,14 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<void> updatePassword(String password) async {
     await client.auth.updateUser(UserAttributes(password: password));
+  }
+
+  @override
+  Future<void> changeEmail(String email) async {
+    await client.auth.updateUser(
+      UserAttributes(email: email.trim()),
+      emailRedirectTo: AppConfig.redirect,
+    );
   }
 
   @override

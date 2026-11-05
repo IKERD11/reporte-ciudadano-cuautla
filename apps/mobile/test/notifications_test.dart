@@ -47,13 +47,23 @@ void main() {
     final notices = Notices();
     await tester.pumpWidget(
       MaterialApp(
-        home: NotificationsScreen(repository: notices, auth: auth),
+        home: NotificationsScreen(
+          repository: notices,
+          auth: auth,
+          activity: true,
+        ),
       ),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Aviso 0'));
     await tester.pumpAndSettle();
+    expect(find.text('Detalle de alerta'), findsOneWidget);
+    await tester.tap(find.byTooltip('Volver'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Aviso 0'));
+    await tester.pumpAndSettle();
+    expect(find.text('Detalle de alerta'), findsOneWidget);
+    await tester.tap(find.byTooltip('Volver'));
     await tester.pumpAndSettle();
     expect(notices.reads, 1);
     await tester.scrollUntilVisible(find.text('Siguiente'), 500);
@@ -76,7 +86,11 @@ void main() {
     final notices = Notices()..fail = true;
     await tester.pumpWidget(
       MaterialApp(
-        home: NotificationsScreen(repository: notices, auth: auth),
+        home: NotificationsScreen(
+          repository: notices,
+          auth: auth,
+          activity: true,
+        ),
       ),
     );
     await tester.pumpAndSettle();

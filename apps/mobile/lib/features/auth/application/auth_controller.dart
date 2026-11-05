@@ -59,6 +59,16 @@ class AuthController extends ChangeNotifier {
   }
 
   Future<void> _accept(AuthSignal signal) async {
+    // Token refreshes and account edits must not tear down an open editor.
+    if (stage == AuthStage.ready &&
+        profile != null &&
+        !signal.recovery &&
+        signal.account?.confirmed == true &&
+        signal.account?.id == account?.id) {
+      account = signal.account;
+      _emit();
+      return;
+    }
     final epoch = ++_epoch;
     account = signal.account;
     profile = null;
@@ -191,6 +201,15 @@ class AuthController extends ChangeNotifier {
     profile = result;
     message = 'Perfil actualizado.';
   });
+  Future<void> changeEmail(String email) => _run(() async {
+    final source = repository;
+    if (source is! AccountEmailRepository) {
+      throw StateError('Email changes unavailable');
+    }
+    await (source as AccountEmailRepository).changeEmail(email);
+    message = 'Confirma el cambio desde los enlaces enviados a tus correos.';
+  });
+
   void returnToLogin() {
     message = null;
     stage = AuthStage.signedOut;
