@@ -38,7 +38,7 @@ export async function subscribeToPush(apiBaseUrl: string) {
   if (permission !== "granted") return permission
 
   const registration = await navigator.serviceWorker.register(
-    "/notification-sw.js",
+    new URL("notification-sw.js", new URL(import.meta.env.BASE_URL, location.origin)).href,
   )
   const existing = await registration.pushManager.getSubscription()
   const subscription =
@@ -61,7 +61,7 @@ export async function subscribeToPush(apiBaseUrl: string) {
 export async function unsubscribeFromPush(apiBaseUrl: string) {
   if (!("serviceWorker" in navigator)) return
   const registration = await navigator.serviceWorker.getRegistration(
-    "/notification-sw.js",
+    new URL("notification-sw.js", new URL(import.meta.env.BASE_URL, location.origin)).href,
   )
   const subscription = await registration?.pushManager.getSubscription()
   if (!subscription) return

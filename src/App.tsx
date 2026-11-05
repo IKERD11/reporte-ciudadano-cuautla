@@ -4532,7 +4532,7 @@ type UserNotification = {
   latestUpdatedAt?: string
 }
 
-const notificationApiUrl = `https://${projectId}.supabase.co/functions/v1/make-server-66389b89`
+const notificationApiUrl = `https://${projectId}.supabase.co/functions/v1/server/make-server-66389b89`
 
 class NotificationApiError extends Error {
   constructor(public status: number) {

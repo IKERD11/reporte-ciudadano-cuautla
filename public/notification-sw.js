@@ -21,7 +21,7 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close()
   const data = event.notification.data || {}
   const destination = data.destination || {}
-  const target = new URL("/", self.location.origin)
+  const target = new URL(self.registration.scope)
   if (data.notificationId)
     target.searchParams.set("notification", data.notificationId)
   if (destination.kind) target.searchParams.set("kind", destination.kind)
@@ -33,7 +33,7 @@ self.addEventListener("notificationclick", (event) => {
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((list) => {
         for (const client of list) {
-          if ("focus" in client) {
+          if ("focus" in client && client.url.startsWith(self.registration.scope)) {
             client.navigate(target.href)
             return client.focus()
           }

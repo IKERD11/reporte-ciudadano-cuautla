@@ -1,6 +1,6 @@
-import { Hono } from "npm:hono"
-import { cors } from "npm:hono/cors"
-import { logger } from "npm:hono/logger"
+import { Hono } from "npm:hono@4.12.8"
+import { cors } from "npm:hono@4.12.8/cors"
+import { logger } from "npm:hono@4.12.8/logger"
 import { createClient } from "jsr:@supabase/supabase-js@2.49.8"
 import webpush from "npm:web-push@3.6.7"
 import * as kv from "./kv_store.tsx"
@@ -320,7 +320,7 @@ async function sendPushNotification(
   userId: string,
   notification: StoredNotification,
 ) {
-  const publicKey = Deno.env.get("VITE_VAPID_PUBLIC_KEY")
+  const publicKey = Deno.env.get("VAPID_PUBLIC_KEY")
   const privateKey = Deno.env.get("VAPID_PRIVATE_KEY")
   const subject = Deno.env.get("VAPID_SUBJECT")
   if (!publicKey || !privateKey || !subject) return
@@ -342,7 +342,8 @@ async function sendPushNotification(
   await Promise.all(
     subscriptions.map(async (subscription) => {
       try {
-        await webpush.sendNotification(subscription, payload)
+        if (!validPushEndpoint(subscription.endpoint)) return
+        await webpush.sendNotification(subscription, payload, { timeout: 8000 })
         await recordMetric(userId, "push_sent", notification.id)
       } catch (error) {
         const statusCode = (error as { statusCode?: number }).statusCode
@@ -439,25 +440,23 @@ app.use(
         .split(",")
         .map((value) => value.trim())
         .filter(Boolean)
-      const localOrigins = ["http://localhost:8443", "http://localhost:5173"]
-      const isMakePreview = /^https:\/\/[a-z0-9-]+\.figma\.site$/.test(origin)
+      const localOrigins = ["http://localhost:8443", "http://localhost:5173", "https://ikerd11.github.io"]
       return configured.includes(origin) ||
-        localOrigins.includes(origin) ||
-        isMakePreview
+        localOrigins.includes(origin)
         ? origin
         : ""
     },
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "apikey"],
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     exposeHeaders: ["Content-Length"],
     maxAge: 600,
   }),
 )
 
-app.use("/make-server-66389b89/*", async (c, next) => {
+app.use("/server/make-server-66389b89/*", async (c, next) => {
   if (
     c.req.method === "OPTIONS" ||
-    c.req.path === "/make-server-66389b89/health"
+    c.req.path === "/server/make-server-66389b89/health"
   )
     return next()
 
@@ -477,7 +476,7 @@ app.use("/make-server-66389b89/*", async (c, next) => {
     { global: { headers: { Authorization: `Bearer ${token}` } } },
   )
   const { data, error } = await supabase.auth.getUser(token)
-  if (error || !data.user) return c.json({ error: "Unauthorized" }, 401)
+  if (error || !data.user || data.user.is_anonymous || !data.user.email_confirmed_at) return c.json({ error: "Unauthorized" }, 401)
 
   c.set("userId", data.user.id)
   c.set("role", String(data.user.app_metadata?.role ?? "citizen"))
@@ -485,11 +484,11 @@ app.use("/make-server-66389b89/*", async (c, next) => {
 })
 
 // Health check endpoint
-app.get("/make-server-66389b89/health", (c) => {
-  return c.json({ status: "ok" })
+app.get("/server/make-server-66389b89/health", (c) => {
+  return c.json({ status: "ok", pushConfigured: Boolean(Deno.env.get("VAPID_PUBLIC_KEY") && Deno.env.get("VAPID_PRIVATE_KEY") && Deno.env.get("VAPID_SUBJECT")) })
 })
 
-app.get("/make-server-66389b89/notifications", async (c) => {
+app.get("/server/make-server-66389b89/notifications", async (c) => {
   const userId = c.get("userId")
   const preferences = await getPreferences(userId)
   const notifications = await getNotifications(userId)
@@ -505,7 +504,7 @@ app.get("/make-server-66389b89/notifications", async (c) => {
   })
 })
 
-app.put("/make-server-66389b89/notifications/read", async (c) => {
+app.put("/server/make-server-66389b89/notifications/read", async (c) => {
   const userId = c.get("userId")
   const {
     id,
@@ -550,7 +549,7 @@ app.put("/make-server-66389b89/notifications/read", async (c) => {
   return c.json({ notifications: updated })
 })
 
-app.put("/make-server-66389b89/notifications/seen", async (c) => {
+app.put("/server/make-server-66389b89/notifications/seen", async (c) => {
   const userId = c.get("userId")
   const { ids, seenAt: clientSeenAt } = await c.req.json<{
     ids: string[]
@@ -570,7 +569,7 @@ app.put("/make-server-66389b89/notifications/seen", async (c) => {
   return c.json({ ok: true })
 })
 
-app.put("/make-server-66389b89/notifications/archive", async (c) => {
+app.put("/server/make-server-66389b89/notifications/archive", async (c) => {
   const userId = c.get("userId")
   const { id, ids, all } = await c.req.json<{
     id?: string
@@ -592,7 +591,7 @@ app.put("/make-server-66389b89/notifications/archive", async (c) => {
   })
 })
 
-app.delete("/make-server-66389b89/notifications/:id", async (c) => {
+app.delete("/server/make-server-66389b89/notifications/:id", async (c) => {
   const userId = c.get("userId")
   const id = c.req.param("id")
   const notifications = await getNotifications(userId)
@@ -605,7 +604,7 @@ app.delete("/make-server-66389b89/notifications/:id", async (c) => {
   return c.json({ ok: true })
 })
 
-app.post("/make-server-66389b89/notification-events", async (c) => {
+app.post("/server/make-server-66389b89/notification-events", async (c) => {
   if (!["admin", "municipal", "service"].includes(c.get("role")))
     return c.json({ error: "Forbidden" }, 403)
 
@@ -637,7 +636,7 @@ app.post("/make-server-66389b89/notification-events", async (c) => {
 })
 
 app.post(
-  "/make-server-66389b89/notification-deliveries/process-due",
+  "/server/make-server-66389b89/notification-deliveries/process-due",
   async (c) => {
     const userId = c.get("userId")
     const preferences = await getPreferences(userId)
@@ -691,7 +690,7 @@ app.post(
   },
 )
 
-app.post("/make-server-66389b89/notifications/action", async (c) => {
+app.post("/server/make-server-66389b89/notifications/action", async (c) => {
   const userId = c.get("userId")
   const { id, ids } = await c.req.json<{
     id?: string
@@ -710,12 +709,12 @@ app.post("/make-server-66389b89/notifications/action", async (c) => {
   return c.json({ ok: true, actionedAt })
 })
 
-app.get("/make-server-66389b89/notification-preferences", async (c) => {
+app.get("/server/make-server-66389b89/notification-preferences", async (c) => {
   const preferences = await getPreferences(c.get("userId"))
   return c.json({ preferences })
 })
 
-app.put("/make-server-66389b89/notification-preferences", async (c) => {
+app.put("/server/make-server-66389b89/notification-preferences", async (c) => {
   const userId = c.get("userId")
   const incoming = await c.req.json<Partial<NotificationPreferences>>()
   const current = await getPreferences(userId)
@@ -725,7 +724,17 @@ app.put("/make-server-66389b89/notification-preferences", async (c) => {
   return c.json({ preferences })
 })
 
-app.post("/make-server-66389b89/push-subscriptions", async (c) => {
+function validPushEndpoint(endpoint: unknown): endpoint is string {
+  if (typeof endpoint !== "string" || endpoint.length > 2048) return false
+  try {
+    const url = new URL(endpoint)
+    return url.protocol === "https:" && !url.port && !url.username && !url.password &&
+      (["fcm.googleapis.com", "updates.push.services.mozilla.com", "web.push.apple.com"].includes(url.hostname) ||
+        url.hostname.endsWith(".notify.windows.com"))
+  } catch { return false }
+}
+
+app.post("/server/make-server-66389b89/push-subscriptions", async (c) => {
   const userId = c.get("userId")
   const { subscription, userAgent } = await c.req.json<{
     subscription: {
@@ -738,7 +747,7 @@ app.post("/make-server-66389b89/push-subscriptions", async (c) => {
     userAgent?: string
   }>()
   if (
-    !subscription.endpoint ||
+    !subscription || !validPushEndpoint(subscription.endpoint) ||
     !subscription.keys?.p256dh ||
     !subscription.keys.auth
   )
@@ -766,7 +775,7 @@ app.post("/make-server-66389b89/push-subscriptions", async (c) => {
   return c.json({ ok: true }, 201)
 })
 
-app.delete("/make-server-66389b89/push-subscriptions", async (c) => {
+app.delete("/server/make-server-66389b89/push-subscriptions", async (c) => {
   const userId = c.get("userId")
   const { endpoint } = await c.req.json<{ endpoint: string }>()
   const subscriptions = await getPushSubscriptions(userId)
