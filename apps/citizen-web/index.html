@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="<!-- figma:lang -->">
+  <head>
+    <!-- figma:head-start -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><!-- figma:title --></title>
+    <!-- figma:head-end -->
+    <script>
+    // Retire only the previous Flutter offline worker when replacing the web entry.
+    if ("serviceWorker" in navigator) navigator.serviceWorker.getRegistrations().then(async registrations => {
+      const controlledByFlutter = navigator.serviceWorker.controller?.scriptURL.includes("flutter_service_worker")
+      await Promise.all(registrations.filter(r => r.active?.scriptURL.includes("flutter_service_worker")).map(r => r.unregister()))
+      if (controlledByFlutter) location.reload()
+    })
+  </script>
+</head>
+  <body>
+    <!-- figma:body-start -->
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <!-- figma:body-end -->
+  </body>
+</html>

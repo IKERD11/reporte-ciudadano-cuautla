@@ -1,0 +1,12 @@
+{
+  "description": "Reportes ciudadanos, seguimiento y alertas de la comunidad de Cuautla.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  },
+  "title": "Cuautla Segura",
+  "language": "es"
+}

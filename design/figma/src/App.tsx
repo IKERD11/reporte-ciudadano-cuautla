@@ -13,21 +13,21 @@ import {
   type ReactNode,
 } from "react"
 import { flushSync } from "react-dom"
-import helpContactSupportImage from "./assets/help/contact-support.png"
-import helpCreateReportImage from "./assets/help/create-report.png"
-import helpFaqImage from "./assets/help/faq.png"
-import helpMunicipalServiceImage from "./assets/help/municipal-service.png"
-import helpReportProblemImage from "./assets/help/report-problem.png"
-import helpReportTrackingImage from "./assets/help/report-tracking.png"
-import helpSupportHeroImage from "./assets/help/support-hero.png"
-import privacyAnonymousImage from "./assets/privacy/anonymous.png"
-import privacyCameraImage from "./assets/privacy/camera.png"
-import privacyDataImage from "./assets/privacy/data.png"
-import privacyDeleteImage from "./assets/privacy/delete.png"
-import privacyDownloadImage from "./assets/privacy/download.png"
-import privacyLocationImage from "./assets/privacy/location.png"
-import privacySecurityImage from "./assets/privacy/security.png"
-import privacySessionsImage from "./assets/privacy/sessions.png"
+import helpContactSupportImage from "./assets/help/contact-support.webp"
+import helpCreateReportImage from "./assets/help/create-report.webp"
+import helpFaqImage from "./assets/help/faq.webp"
+import helpMunicipalServiceImage from "./assets/help/municipal-service.webp"
+import helpReportProblemImage from "./assets/help/report-problem.webp"
+import helpReportTrackingImage from "./assets/help/report-tracking.webp"
+import helpSupportHeroImage from "./assets/help/support-hero.webp"
+import privacyAnonymousImage from "./assets/privacy/anonymous.webp"
+import privacyCameraImage from "./assets/privacy/camera.webp"
+import privacyDataImage from "./assets/privacy/data.webp"
+import privacyDeleteImage from "./assets/privacy/delete.webp"
+import privacyDownloadImage from "./assets/privacy/download.webp"
+import privacyLocationImage from "./assets/privacy/location.webp"
+import privacySecurityImage from "./assets/privacy/security.webp"
+import privacySessionsImage from "./assets/privacy/sessions.webp"
 import { projectId } from "../utils/supabase/info"
 import { subscribeToPush, unsubscribeFromPush } from "./push"
 import { supabase } from "./supabase"
@@ -419,8 +419,9 @@ function Sticker({
       alt=""
       aria-hidden="true"
       className={`sticker ${className}`}
+      decoding="async"
       draggable="false"
-      src={`/icons/3d/${name}.${name === "mourning" ? "png" : "webp"}`}
+      src={`/icons/3d/${name}.webp`}
     />
   )
 }
@@ -433,8 +434,9 @@ function ActivityIcon({ name }: { name: ActivityIconName }) {
       alt=""
       aria-hidden="true"
       className="activity-3d-icon"
+      decoding="async"
       draggable="false"
-      src={`/icons/3d/activity-${name}.png`}
+      src={`/icons/3d/activity-${name}.webp`}
     />
   )
 }
@@ -453,8 +455,9 @@ function TrackingIcon({
       alt=""
       aria-hidden="true"
       className={`tracking-3d-icon ${className}`}
+      decoding="async"
       draggable="false"
-      src={`/icons/3d/tracking-${name}.png`}
+      src={`/icons/3d/tracking-${name}.webp`}
     />
   )
 }
@@ -1252,9 +1255,13 @@ function ZoneConfigurationScreen({
         void resolveAddress(nextPosition, "Ubicación actual, Cuautla, Morelos")
         setLocating(false)
       },
-      () => {
+      (error) => {
         setLocating(false)
-        onNotice("No fue posible obtener tu ubicación")
+        onNotice(
+          error.code === error.PERMISSION_DENIED
+            ? "Permite el acceso a tu ubicación en la configuración del navegador"
+            : "No fue posible obtener tu ubicación. Inténtalo de nuevo.",
+        )
       },
       { enableHighAccuracy: true, timeout: 8000 },
     )
@@ -1301,7 +1308,7 @@ function ZoneConfigurationScreen({
   return (
     <div className="zone-screen">
       <header className="zone-header">
-        <button type="button" onClick={onBack} aria-label="Volver al inicio">
+        <button type="button" onClick={onBack} aria-label="Volver">
           <Icon name="arrow-left" size={30} strokeWidth={2.5} />
         </button>
         <h1>Configurar mi zona</h1>
@@ -1310,7 +1317,7 @@ function ZoneConfigurationScreen({
 
       <div className="zone-content">
         <section className="zone-intro">
-          <img src="/icons/3d/zone-location.png" alt="" aria-hidden="true" />
+          <img src="/icons/3d/zone-location.webp" alt="" aria-hidden="true" />
           <div>
             <h2>Define tu zona</h2>
             <p>
@@ -1983,7 +1990,7 @@ function ConfirmationScreen({
           <section className="confirmation-card compact-card">
             <span className="confirmation-icon description-confirmation-icon">
               <img
-                src="/icons/3d/description.png"
+                src="/icons/3d/description.webp"
                 alt=""
                 aria-hidden="true"
                 draggable="false"
@@ -4185,30 +4192,50 @@ function ActivityScreen({
                       <span className="activity-card-copy">
                         <span className="activity-card-title-row">
                           <strong>{entry.title}</strong>
-                          <span className="activity-card-badges">
-                            {entry.status && (
-                              <small
-                                className={`activity-status activity-status-${entry.status
-                                  .toLowerCase()
-                                  .replace(" ", "-")}`}
-                              >
-                                {entry.status}
-                              </small>
-                            )}
-                            <small
-                              className={`activity-read-state ${
-                                unreadIds.has(entry.id) ? "unread" : "read"
-                              }`}
-                            >
-                              {unreadIds.has(entry.id) ? "No leída" : "Leída"}
-                            </small>
-                          </span>
+                          <small
+                            className={`activity-read-state ${
+                              unreadIds.has(entry.id) ? "unread" : "read"
+                            }`}
+                          >
+                            {unreadIds.has(entry.id) ? "No leída" : "Leída"}
+                          </small>
                         </span>
-                        <span>{entry.subject}</span>
-                        <small>{entry.location}</small>
+                        <span className="activity-card-subject">
+                          {entry.subject}
+                        </span>
+                        <small className="activity-card-location">
+                          <Icon name="pin" size={12} strokeWidth={2.3} />
+                          {entry.location}
+                        </small>
                         <time>{entry.date}</time>
                       </span>
                       <Icon name="chevron" size={23} strokeWidth={2.6} />
+                      <span
+                        className={`activity-card-footer ${
+                          entry.status
+                            ? `footer-${entry.status
+                                .toLowerCase()
+                                .replace(" ", "-")}`
+                            : entry.kind === "comment"
+                              ? "footer-comment"
+                              : "footer-alert"
+                        }`}
+                      >
+                        <small>
+                          {entry.kind === "report"
+                            ? "Estado del reporte"
+                            : entry.kind === "comment"
+                              ? "Actualización"
+                              : "Estado de la alerta"}
+                        </small>
+                        <strong>
+                          <i aria-hidden="true" />
+                          {entry.status ??
+                            (entry.kind === "comment"
+                              ? "Nuevo comentario"
+                              : "Alerta activa")}
+                        </strong>
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -4590,7 +4617,114 @@ function getRegistrationErrorMessage(error: RegistrationError) {
   return `No fue posible crear la cuenta: ${error.message}`
 }
 
-const fallbackNotifications: UserNotification[] = []
+const sampleNotificationNow = Date.now()
+const sampleNotificationDate = (millisecondsAgo: number) =>
+  new Date(sampleNotificationNow - millisecondsAgo).toISOString()
+const sampleNotificationExpiry = new Date(
+  sampleNotificationNow + 7 * 24 * 60 * 60_000,
+).toISOString()
+
+const fallbackNotifications: UserNotification[] = [
+  {
+    id: "sample_notification_emergency",
+    type: "emergency",
+    priority: "critical",
+    title: "Alerta de seguridad en el Centro",
+    message:
+      "Se reportó actividad sospechosa cerca del zócalo. Evita la zona y mantente atento.",
+    createdAt: sampleNotificationDate(8 * 60_000),
+    expiresAt: sampleNotificationExpiry,
+    dedupeKey: "sample:emergency:centro",
+    destination: {
+      kind: "alert",
+      entityId: "alert_robbery_centro",
+    },
+    deliveredAt: sampleNotificationDate(7 * 60_000),
+  },
+  {
+    id: "sample_notification_report",
+    type: "report_update",
+    priority: "important",
+    title: "Tu reporte está siendo atendido",
+    message:
+      "Servicios Públicos asignó una cuadrilla al problema de alumbrado que reportaste.",
+    createdAt: sampleNotificationDate(46 * 60_000),
+    expiresAt: sampleNotificationExpiry,
+    dedupeKey: "sample:report:lighting",
+    destination: {
+      kind: "report",
+      entityId: "report_lighting_jardines",
+    },
+    deliveredAt: sampleNotificationDate(45 * 60_000),
+    seenAt: sampleNotificationDate(20 * 60_000),
+  },
+  {
+    id: "sample_notification_nearby",
+    type: "nearby_incident",
+    priority: "informational",
+    title: "Tránsito lento cerca de tu zona",
+    message:
+      "Hay circulación lenta sobre Avenida Constituyentes. Considera una ruta alterna.",
+    createdAt: sampleNotificationDate(3 * 60 * 60_000),
+    expiresAt: sampleNotificationExpiry,
+    dedupeKey: "sample:nearby:traffic",
+    destination: {
+      kind: "alert",
+      entityId: "alert_traffic_constituyentes",
+    },
+    deliveredAt: sampleNotificationDate(3 * 60 * 60_000),
+    seenAt: sampleNotificationDate(2.5 * 60 * 60_000),
+    readAt: sampleNotificationDate(2 * 60 * 60_000),
+  },
+  {
+    id: "sample_notification_community",
+    type: "community_alert",
+    priority: "important",
+    title: "Obras viales programadas",
+    message:
+      "Mañana habrá cierres parciales por mantenimiento. Planea tus traslados con anticipación.",
+    createdAt: sampleNotificationDate(26 * 60 * 60_000),
+    expiresAt: sampleNotificationExpiry,
+    dedupeKey: "sample:community:roadwork",
+    destination: {
+      kind: "alert",
+      entityId: "alert_roadwork_febrero",
+    },
+    deliveredAt: sampleNotificationDate(26 * 60 * 60_000),
+    seenAt: sampleNotificationDate(25 * 60 * 60_000),
+    readAt: sampleNotificationDate(25 * 60 * 60_000),
+    actionedAt: sampleNotificationDate(24 * 60 * 60_000),
+  },
+  {
+    id: "sample_notification_grouped",
+    type: "report_update",
+    priority: "informational",
+    title: "Novedades en tu reporte de bache",
+    message:
+      "El reporte recibió nuevas actualizaciones y evidencia de otros vecinos.",
+    createdAt: sampleNotificationDate(72 * 60 * 60_000),
+    expiresAt: sampleNotificationExpiry,
+    dedupeKey: "sample:report:pothole",
+    destination: {
+      kind: "report",
+      entityId: "report_bache_constitucion",
+    },
+    deliveredAt: sampleNotificationDate(72 * 60 * 60_000),
+    seenAt: sampleNotificationDate(70 * 60 * 60_000),
+    readAt: sampleNotificationDate(70 * 60 * 60_000),
+    groupedCount: 3,
+    groupedEventIds: [
+      "sample_notification_grouped_1",
+      "sample_notification_grouped_2",
+      "sample_notification_grouped_3",
+    ],
+    latestUpdatedAt: sampleNotificationDate(49 * 60 * 60_000),
+  },
+]
+
+function isSampleNotification(item: UserNotification) {
+  return item.id.startsWith("sample_notification_")
+}
 
 const notificationMeta: Record<UserNotificationType, {
   label: string
@@ -4699,6 +4833,8 @@ function NotificationsInboxScreen({
 }) {
   const [view, setView] = useState<"all" | "unread">("all")
   const unreadCount = notifications.filter((item) => !item.readAt).length
+  const sampleMode =
+    notifications.length > 0 && notifications.every(isSampleNotification)
   const visibleNotifications =
     view === "unread"
       ? notifications.filter((item) => !item.readAt)
@@ -4789,7 +4925,7 @@ function NotificationsInboxScreen({
           </div>
         )}
 
-        {syncError && (
+        {syncError && !sampleMode && (
           <div className="notification-sync-error" role="alert">
             <span>
               <Icon name="alert" size={18} strokeWidth={2.2} />
@@ -4798,6 +4934,13 @@ function NotificationsInboxScreen({
             <button type="button" onClick={onRetry}>
               Reintentar
             </button>
+          </div>
+        )}
+
+        {sampleMode && (
+          <div className="notification-sample-notice" role="status">
+            <span>Vista de ejemplo</span>
+            Notificaciones demostrativas para revisar el diseño.
           </div>
         )}
 
@@ -5018,7 +5161,8 @@ function loadCachedNotifications() {
       index: number
     }
   }>>(NOTIFICATION_CACHE_KEY, fallbackNotifications)
-  return cached.map((notification) => {
+  const notifications = cached.length ? cached : fallbackNotifications
+  return notifications.map((notification) => {
     const {
       timeLabel: _legacyTimeLabel,
       priority: storedPriority,
@@ -5096,6 +5240,101 @@ function composeQuietTime(hour: number, minute: number, period: QuietPeriod) {
   return `${String(hour24).padStart(2, "0")}:${String(minute).padStart(2, "0")}`
 }
 
+function QuietTimePicker({
+  id,
+  label,
+  value,
+  options,
+  placement,
+  initialFocus = false,
+  onChange,
+}: {
+  id: string
+  label: string
+  value: number
+  options: { value: number label: string }[]
+  placement: "up" | "down"
+  initialFocus?: boolean
+  onChange: (value: number) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const selected = options.find((option) => option.value === value)
+
+  useEffect(() => {
+    if (!open) return
+    const closeOutside = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+    document.addEventListener("pointerdown", closeOutside)
+    return () => document.removeEventListener("pointerdown", closeOutside)
+  }, [open])
+
+  return (
+    <div
+      ref={containerRef}
+      className={`quiet-time-picker ${open ? "open" : ""}`}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && open) {
+          event.preventDefault()
+          event.stopPropagation()
+          setOpen(false)
+          triggerRef.current?.focus()
+        }
+      }}
+    >
+      <span id={`${id}-label`}>{label}</span>
+      <button
+        ref={triggerRef}
+        type="button"
+        className="quiet-time-picker-trigger"
+        aria-labelledby={`${id}-label ${id}-value`}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={`${id}-options`}
+        data-schedule-initial-focus={initialFocus || undefined}
+        onClick={() => setOpen((current) => !current)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown" && !open) {
+            event.preventDefault()
+            setOpen(true)
+          }
+        }}
+      >
+        <strong id={`${id}-value`}>{selected?.label ?? value}</strong>
+        <Icon name="chevron" size={16} strokeWidth={2.5} />
+      </button>
+
+      {open && (
+        <div
+          id={`${id}-options`}
+          className={`quiet-time-picker-menu placement-${placement}`}
+          role="listbox"
+          aria-labelledby={`${id}-label`}
+        >
+          {options.map((option) => (
+            <button
+              type="button"
+              role="option"
+              aria-selected={option.value === value}
+              className={option.value === value ? "selected" : ""}
+              key={option.value}
+              onClick={() => {
+                onChange(option.value)
+                setOpen(false)
+                window.requestAnimationFrame(() => triggerRef.current?.focus())
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function NotificationPreferencesScreen({
   preferences,
   onBack,
@@ -5113,10 +5352,17 @@ function NotificationPreferencesScreen({
   const [quietEnd, setQuietEnd] = useState(preferences.quietEnd)
   const scheduleTriggerRef = useRef<HTMLButtonElement>(null)
   const scheduleDialogRef = useRef<HTMLElement>(null)
-  const scheduleInitialFocusRef = useRef<HTMLSelectElement>(null)
   const startTime = splitQuietTime(quietStart)
   const endTime = splitQuietTime(quietEnd)
+  const hourOptions = Array.from({ length: 12 }, (_, index) => ({
+    value: index + 1,
+    label: String(index + 1),
+  }))
   const minuteOptions = Array.from({ length: 12 }, (_, index) => index * 5)
+  const minutePickerOptions = minuteOptions.map((minute) => ({
+    value: minute,
+    label: String(minute).padStart(2, "0"),
+  }))
 
   const togglePreference = (key: NotificationToggleKey) => {
     setDraft((current) => ({ ...current, [key]: !current[key] }))
@@ -5177,7 +5423,11 @@ function NotificationPreferencesScreen({
           'button:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
         ) ?? [],
       )
-    window.requestAnimationFrame(() => scheduleInitialFocusRef.current?.focus())
+    window.requestAnimationFrame(() =>
+      dialog
+        ?.querySelector<HTMLElement>("[data-schedule-initial-focus]")
+        ?.focus(),
+    )
 
     const handleDialogKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -5260,7 +5510,7 @@ function NotificationPreferencesScreen({
               <span className="notification-preference-icon notification-icon-purple">
                 <img
                   className="notification-sound-asset"
-                  src="/icons/3d/notification-sound.png"
+                  src="/icons/3d/notification-sound.webp"
                   alt=""
                 />
               </span>
@@ -5306,7 +5556,7 @@ function NotificationPreferencesScreen({
               <span className="notification-preference-icon notification-icon-moon">
                 <img
                   className="notification-moon-asset"
-                  src="/icons/3d/quiet-hours.png"
+                  src="/icons/3d/quiet-hours.webp"
                   alt=""
                 />
               </span>
@@ -5442,7 +5692,7 @@ function NotificationPreferencesScreen({
           >
             <div className="notifications-schedule-heading">
               <span>
-                <img src="/icons/3d/quiet-hours.png" alt="" />
+                <img src="/icons/3d/quiet-hours.webp" alt="" />
               </span>
               <div>
                 <small>Notificaciones sin sonido</small>
@@ -5461,51 +5711,39 @@ function NotificationPreferencesScreen({
               <section className="notification-time-control">
                 <strong>Desde</strong>
                 <div className="notification-time-selectors">
-                  <label>
-                    <span>Hora</span>
-                    <select
-                      ref={scheduleInitialFocusRef}
-                      value={startTime.hour}
-                      onChange={(event) =>
-                        setQuietStart(
-                          composeQuietTime(
-                            Number(event.target.value),
-                            startTime.minute,
-                            startTime.period,
-                          ),
-                        )
-                      }
-                    >
-                      {Array.from({ length: 12 }, (_, index) => index + 1).map(
-                        (hour) => (
-                          <option key={hour} value={hour}>
-                            {hour}
-                          </option>
+                  <QuietTimePicker
+                    id="quiet-start-hour"
+                    label="Hora"
+                    value={startTime.hour}
+                    options={hourOptions}
+                    placement="down"
+                    initialFocus
+                    onChange={(hour) =>
+                      setQuietStart(
+                        composeQuietTime(
+                          hour,
+                          startTime.minute,
+                          startTime.period,
                         ),
-                      )}
-                    </select>
-                  </label>
-                  <label>
-                    <span>Minutos</span>
-                    <select
-                      value={startTime.minute}
-                      onChange={(event) =>
-                        setQuietStart(
-                          composeQuietTime(
-                            startTime.hour,
-                            Number(event.target.value),
-                            startTime.period,
-                          ),
-                        )
-                      }
-                    >
-                      {minuteOptions.map((minute) => (
-                        <option key={minute} value={minute}>
-                          {String(minute).padStart(2, "0")}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                      )
+                    }
+                  />
+                  <QuietTimePicker
+                    id="quiet-start-minute"
+                    label="Minutos"
+                    value={startTime.minute}
+                    options={minutePickerOptions}
+                    placement="down"
+                    onChange={(minute) =>
+                      setQuietStart(
+                        composeQuietTime(
+                          startTime.hour,
+                          minute,
+                          startTime.period,
+                        ),
+                      )
+                    }
+                  />
                   <div className="notification-period-switch">
                     {(["AM", "PM"] as const).map((period) => (
                       <button
@@ -5533,50 +5771,30 @@ function NotificationPreferencesScreen({
               <section className="notification-time-control">
                 <strong>Hasta</strong>
                 <div className="notification-time-selectors">
-                  <label>
-                    <span>Hora</span>
-                    <select
-                      value={endTime.hour}
-                      onChange={(event) =>
-                        setQuietEnd(
-                          composeQuietTime(
-                            Number(event.target.value),
-                            endTime.minute,
-                            endTime.period,
-                          ),
-                        )
-                      }
-                    >
-                      {Array.from({ length: 12 }, (_, index) => index + 1).map(
-                        (hour) => (
-                          <option key={hour} value={hour}>
-                            {hour}
-                          </option>
-                        ),
-                      )}
-                    </select>
-                  </label>
-                  <label>
-                    <span>Minutos</span>
-                    <select
-                      value={endTime.minute}
-                      onChange={(event) =>
-                        setQuietEnd(
-                          composeQuietTime(
-                            endTime.hour,
-                            Number(event.target.value),
-                            endTime.period,
-                          ),
-                        )
-                      }
-                    >
-                      {minuteOptions.map((minute) => (
-                        <option key={minute} value={minute}>
-                          {String(minute).padStart(2, "0")}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  <QuietTimePicker
+                    id="quiet-end-hour"
+                    label="Hora"
+                    value={endTime.hour}
+                    options={hourOptions}
+                    placement="up"
+                    onChange={(hour) =>
+                      setQuietEnd(
+                        composeQuietTime(hour, endTime.minute, endTime.period),
+                      )
+                    }
+                  />
+                  <QuietTimePicker
+                    id="quiet-end-minute"
+                    label="Minutos"
+                    value={endTime.minute}
+                    options={minutePickerOptions}
+                    placement="up"
+                    onChange={(minute) =>
+                      setQuietEnd(
+                        composeQuietTime(endTime.hour, minute, endTime.period),
+                      )
+                    }
+                  />
                   <div className="notification-period-switch">
                     {(["AM", "PM"] as const).map((period) => (
                       <button
@@ -5628,9 +5846,11 @@ function ProfileMenuIcon({ name }: { name: ProfileMenuIconName }) {
 
 function ProfileScreen({
   profile,
+  location,
   onBack,
   onEditProfile,
   onNotifications,
+  onLocation,
   onPrivacy,
   onHelp,
   onHome,
@@ -5639,12 +5859,13 @@ function ProfileScreen({
   onReports,
   onActivity,
   onLogout,
-  onNotice,
 }: {
   profile: UserProfile
+  location: string
   onBack: () => void
   onEditProfile: () => void
   onNotifications: () => void
+  onLocation: () => void
   onPrivacy: () => void
   onHelp: () => void
   onHome: () => void
@@ -5653,7 +5874,6 @@ function ProfileScreen({
   onReports: () => void
   onActivity: () => void
   onLogout: () => void
-  onNotice: (message: string) => void
 }) {
   return (
     <div className="profile-screen">
@@ -5693,7 +5913,9 @@ function ProfileScreen({
             onClick={onReports}
           >
             <ProfileMenuIcon name="reports" />
-            <strong>Mis reportes</strong>
+            <span className="profile-menu-copy">
+              <strong>Mis reportes</strong>
+            </span>
             <Icon name="chevron" size={21} strokeWidth={2.5} />
           </button>
 
@@ -5703,18 +5925,22 @@ function ProfileScreen({
             onClick={onNotifications}
           >
             <ProfileMenuIcon name="notifications" />
-            <strong>Preferencias de notificaciones</strong>
+            <span className="profile-menu-copy">
+              <strong>Preferencias de notificaciones</strong>
+            </span>
             <Icon name="chevron" size={21} strokeWidth={2.5} />
           </button>
 
           <button
             type="button"
             className="profile-menu-row"
-            onClick={() => onNotice("Ubicación actual: Centro, Cuautla")}
+            onClick={onLocation}
           >
             <ProfileMenuIcon name="location" />
-            <strong>Ubicación</strong>
-            <small>Centro, Cuautla</small>
+            <span className="profile-menu-copy">
+              <strong>Ubicación</strong>
+              <small>{location}</small>
+            </span>
             <Icon name="chevron" size={21} strokeWidth={2.5} />
           </button>
 
@@ -5724,23 +5950,31 @@ function ProfileScreen({
             onClick={onPrivacy}
           >
             <ProfileMenuIcon name="privacy" />
-            <strong>Privacidad</strong>
+            <span className="profile-menu-copy">
+              <strong>Privacidad</strong>
+            </span>
             <Icon name="chevron" size={21} strokeWidth={2.5} />
           </button>
 
           <button type="button" className="profile-menu-row" onClick={onHelp}>
             <ProfileMenuIcon name="help" />
-            <strong>Ayuda y soporte</strong>
+            <span className="profile-menu-copy">
+              <strong>Ayuda y soporte</strong>
+            </span>
             <Icon name="chevron" size={21} strokeWidth={2.5} />
           </button>
+        </section>
 
+        <section className="profile-logout-card">
           <button
             type="button"
             className="profile-menu-row logout-row"
             onClick={onLogout}
           >
             <ProfileMenuIcon name="logout" />
-            <strong>Cerrar sesión</strong>
+            <span className="profile-menu-copy">
+              <strong>Cerrar sesión</strong>
+            </span>
           </button>
         </section>
       </div>
@@ -6529,7 +6763,7 @@ function EditProfileScreen({
         <section className="edit-profile-access">
           <h2>Acceso a tu cuenta</h2>
           <button type="button" onClick={onPassword}>
-            <img src="/icons/3d/profile-security.png" alt="" />
+            <img src="/icons/3d/profile-security.webp" alt="" />
             <span>
               <strong>Contraseña</strong>
               <small>Actualiza tu contraseña.</small>
@@ -6627,7 +6861,11 @@ function ChangePasswordScreen({
         </header>
 
         <div className="password-success-content">
-          <img src="/icons/3d/password-updated.png" alt="" aria-hidden="true" />
+          <img
+            src="/icons/3d/password-updated.webp"
+            alt=""
+            aria-hidden="true"
+          />
           <section>
             <h2>¡Contraseña actualizada!</h2>
             <p>Tu contraseña se cambió correctamente.</p>
@@ -6653,7 +6891,7 @@ function ChangePasswordScreen({
 
       <form className="change-password-content" onSubmit={submitPassword}>
         <div className="change-password-intro">
-          <img src="/icons/3d/change-password.png" alt="" aria-hidden="true" />
+          <img src="/icons/3d/change-password.webp" alt="" aria-hidden="true" />
           <h2>Protege tu cuenta</h2>
           <p>Elige una contraseña segura para tu cuenta.</p>
         </div>
@@ -6797,32 +7035,76 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
   )
 }
 
+type LoginField = "email" | "password"
+
+type LoginResult = { ok: true } | {
+  ok: false
+  field: LoginField | "both"
+  message: string
+}
+
 function LoginScreen({
   onBack,
   onLogin,
   onRegister,
   onForgot,
-  onNotice,
 }: {
   onBack: () => void
-  onLogin: (email: string, password: string) => Promise<boolean>
+  onLogin: (email: string, password: string) => Promise<LoginResult>
   onRegister: () => void
   onForgot: () => void
-  onNotice: (message: string) => void
 }) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [errors, setErrors] = useState<Partial<Record<LoginField, string>>>({})
+
+  const validateEmail = (value: string) => {
+    if (!value.trim()) return "Ingresa tu correo electrónico."
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+      return "Escribe un correo válido, por ejemplo nombre@correo.com."
+    }
+    return ""
+  }
+
+  const validatePassword = (value: string) =>
+    value ? "" : "Ingresa tu contraseña."
+
+  const updateFieldError = (field: LoginField, message: string) => {
+    setErrors((current) => {
+      if (message) return { ...current, [field]: message }
+      const next = { ...current }
+      delete next[field]
+      return next
+    })
+  }
 
   const submitLogin = async (event: FormEvent) => {
     event.preventDefault()
-    if (!email.trim() || !password.trim()) {
-      onNotice("Completa tu correo y contraseña")
+    const emailError = validateEmail(email)
+    const passwordError = validatePassword(password)
+    if (emailError || passwordError) {
+      setErrors({
+        ...(emailError ? { email: emailError } : {}),
+        ...(passwordError ? { password: passwordError } : {}),
+      })
       return
     }
+
+    setErrors({})
     setSubmitting(true)
-    await onLogin(email.trim(), password)
+    const result = await onLogin(email.trim(), password)
+    if (!result.ok) {
+      if (result.field === "both") {
+        setErrors({
+          email: result.message,
+          password: result.message,
+        })
+      } else {
+        setErrors({ [result.field]: result.message })
+      }
+    }
     setSubmitting(false)
   }
 
@@ -6841,42 +7123,90 @@ function LoginScreen({
       </div>
 
       <form className="auth-form" onSubmit={submitLogin}>
-        <label className="auth-field">
-          <Icon name="mail" size={21} strokeWidth={2} />
-          <span>
-            <strong>Correo electrónico</strong>
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="Tu correo electrónico"
-              autoComplete="email"
-            />
-          </span>
-        </label>
+        <div className={`auth-field-group ${errors.email ? "has-error" : ""}`}>
+          <label className="auth-field">
+            <Icon name="mail" size={21} strokeWidth={2} />
+            <span>
+              <strong>Correo electrónico</strong>
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => {
+                  setEmail(event.target.value)
+                  if (errors.email) updateFieldError("email", "")
+                }}
+                onBlur={() => updateFieldError("email", validateEmail(email))}
+                placeholder="Tu correo electrónico"
+                autoComplete="email"
+                aria-invalid={Boolean(errors.email)}
+                aria-describedby={
+                  errors.email ? "login-email-error" : undefined
+                }
+              />
+            </span>
+          </label>
+          {errors.email && (
+            <div
+              id="login-email-error"
+              className="auth-field-message"
+              role="alert"
+            >
+              <span aria-hidden="true">!</span>
+              <p>{errors.email}</p>
+            </div>
+          )}
+        </div>
 
-        <label className="auth-field">
-          <Icon name="lock" size={21} strokeWidth={2} />
-          <span>
-            <strong>Contraseña</strong>
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Tu contraseña"
-              autoComplete="current-password"
-            />
-          </span>
-          <button
-            type="button"
-            onClick={() => setShowPassword((visible) => !visible)}
-            aria-label={
-              showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
-            }
-          >
-            <Icon name="eye" size={21} strokeWidth={2} />
-          </button>
-        </label>
+        <div
+          className={`auth-field-group ${errors.password ? "has-error" : ""}`}
+        >
+          <label className="auth-field">
+            <Icon name="lock" size={21} strokeWidth={2} />
+            <span>
+              <strong>Contraseña</strong>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(event) => {
+                  setPassword(event.target.value)
+                  if (errors.password) updateFieldError("password", "")
+                }}
+                onBlur={() =>
+                  updateFieldError("password", validatePassword(password))
+                }
+                placeholder="Tu contraseña"
+                autoComplete="current-password"
+                aria-invalid={Boolean(errors.password)}
+                aria-describedby={
+                  errors.password ? "login-password-error" : undefined
+                }
+              />
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowPassword((visible) => !visible)}
+              aria-label={
+                showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+              }
+            >
+              <Icon
+                name={showPassword ? "eye-off" : "eye"}
+                size={21}
+                strokeWidth={2}
+              />
+            </button>
+          </label>
+          {errors.password && (
+            <div
+              id="login-password-error"
+              className="auth-field-message"
+              role="alert"
+            >
+              <span aria-hidden="true">!</span>
+              <p>{errors.password}</p>
+            </div>
+          )}
+        </div>
 
         <button type="button" className="forgot-password" onClick={onForgot}>
           ¿Olvidaste tu contraseña?
@@ -7157,24 +7487,42 @@ function RegisterScreen({
   const [accepted, setAccepted] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const passwordIsStrong =
-    password.length >= 12 &&
-    /[A-Z]/.test(password) &&
-    /[a-z]/.test(password) &&
-    /\d/.test(password)
+  const [passwordFieldActive, setPasswordFieldActive] = useState(false)
+  const [registrationAttempted, setRegistrationAttempted] = useState(false)
+  const passwordInputRef = useRef<HTMLInputElement>(null)
+  const passwordRequirements = [
+    { label: "12 caracteres o más", met: password.length >= 12 },
+    {
+      label: "Una mayúscula y una minúscula",
+      met: /[A-Z]/.test(password) && /[a-z]/.test(password),
+    },
+    { label: "Un número", met: /\d/.test(password) },
+    {
+      label: "Un carácter especial (! @ # $)",
+      met: /[^A-Za-z0-9\s]/.test(password),
+    },
+  ]
+  const passwordIsStrong = passwordRequirements.every(
+    (requirement) => requirement.met,
+  )
+  const showPasswordGuide = passwordFieldActive && !passwordIsStrong
+  const confirmPasswordHasError =
+    (registrationAttempted && !confirmPassword) ||
+    (Boolean(confirmPassword) && password !== confirmPassword)
 
   const submitRegistration = async (event: FormEvent) => {
     event.preventDefault()
+    setRegistrationAttempted(true)
     if (!name.trim() || !email.trim() || !password.trim()) {
+      if (!password.trim()) passwordInputRef.current?.focus()
       onNotice("Completa todos los campos")
       return
     }
     if (!passwordIsStrong) {
-      onNotice("Usa 12 caracteres, mayúscula, minúscula y número")
+      passwordInputRef.current?.focus()
       return
     }
     if (password !== confirmPassword) {
-      onNotice("Las contraseñas no coinciden")
       return
     }
     if (!accepted) {
@@ -7227,55 +7575,146 @@ function RegisterScreen({
           </span>
         </label>
 
-        <label className="auth-field">
-          <Icon name="lock" size={21} strokeWidth={2} />
-          <span>
-            <strong>Contraseña</strong>
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Crea una contraseña"
-              autoComplete="new-password"
-            />
-          </span>
-          <button
-            type="button"
-            onClick={() => setShowPassword((visible) => !visible)}
-            aria-label={
-              showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+        <div
+          className={`register-password-group ${
+            registrationAttempted && !passwordIsStrong ? "has-error" : ""
+          }`}
+          onFocusCapture={() => setPasswordFieldActive(true)}
+          onBlurCapture={(event) => {
+            if (
+              !event.currentTarget.contains(event.relatedTarget as Node | null)
+            ) {
+              setPasswordFieldActive(false)
             }
-          >
-            <Icon name="eye" size={21} strokeWidth={2} />
-          </button>
-        </label>
+          }}
+        >
+          <label className="auth-field">
+            <Icon name="lock" size={21} strokeWidth={2} />
+            <span>
+              <strong>Contraseña</strong>
+              <input
+                ref={passwordInputRef}
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Crea una contraseña"
+                autoComplete="new-password"
+                aria-invalid={
+                  registrationAttempted ? !passwordIsStrong : undefined
+                }
+                aria-describedby={
+                  showPasswordGuide
+                    ? "register-password-requirements"
+                    : undefined
+                }
+              />
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowPassword((visible) => !visible)}
+              aria-label={
+                showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+              }
+            >
+              <Icon
+                name={showPassword ? "eye-off" : "eye"}
+                size={21}
+                strokeWidth={2}
+              />
+            </button>
+          </label>
 
-        <label className="auth-field">
-          <Icon name="lock" size={21} strokeWidth={2} />
-          <span>
-            <strong>Confirmar contraseña</strong>
-            <input
-              type={showPassword ? "text" : "password"}
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              placeholder="Repite tu contraseña"
-              autoComplete="new-password"
-            />
-          </span>
-          <button
-            type="button"
-            onClick={() => setShowPassword((visible) => !visible)}
-            aria-label={
-              showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
-            }
-          >
-            <Icon name="eye" size={21} strokeWidth={2} />
-          </button>
-        </label>
+          {showPasswordGuide && (
+            <section
+              id="register-password-requirements"
+              className="register-password-guide"
+              aria-live="polite"
+            >
+              <h3>Tu contraseña debe incluir:</h3>
+              <ul>
+                {passwordRequirements.map((requirement) => (
+                  <li
+                    className={
+                      requirement.met
+                        ? "met"
+                        : password || registrationAttempted
+                          ? "unmet"
+                          : ""
+                    }
+                    key={requirement.label}
+                  >
+                    <span>
+                      {requirement.met ? (
+                        <Icon name="check" size={12} strokeWidth={3} />
+                      ) : (
+                        "!"
+                      )}
+                    </span>
+                    {requirement.label}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
 
-        <small className="password-help">
-          Usa 12 caracteres, mayúscula, minúscula y número.
-        </small>
+        <div
+          className={`register-confirm-group ${
+            confirmPasswordHasError
+              ? "has-error"
+              : confirmPassword
+                ? "is-matching"
+                : ""
+          }`}
+        >
+          <label className="auth-field">
+            <Icon name="lock" size={21} strokeWidth={2} />
+            <span>
+              <strong>Confirmar contraseña</strong>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                placeholder="Repite tu contraseña"
+                autoComplete="new-password"
+                aria-invalid={confirmPasswordHasError || undefined}
+                aria-describedby={
+                  confirmPasswordHasError
+                    ? "register-confirm-password-error"
+                    : undefined
+                }
+              />
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowPassword((visible) => !visible)}
+              aria-label={
+                showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+              }
+            >
+              <Icon
+                name={showPassword ? "eye-off" : "eye"}
+                size={21}
+                strokeWidth={2}
+              />
+            </button>
+          </label>
+
+          {confirmPasswordHasError && (
+            <div
+              id="register-confirm-password-error"
+              className="register-confirm-message"
+              role="alert"
+            >
+              <span aria-hidden="true">!</span>
+              <p>
+                {confirmPassword
+                  ? "Las contraseñas no coinciden. Escríbela igual que arriba."
+                  : "Confirma tu contraseña para continuar."}
+              </p>
+            </div>
+          )}
+        </div>
 
         <label className="terms-check">
           <input
@@ -7457,8 +7896,8 @@ export default function App() {
   const [screen, setScreenState] = useState<AppScreen>("welcome")
   const [authenticated, setAuthenticated] = useState(false)
   const [userProfile, setUserProfile] = useState<UserProfile>({
-    name: "Iker Pichardo Téllez",
-    email: "iker@email.com",
+    name: "IKER DONOVAN PICHARDO TELLEZ",
+    email: "24680973@cuautla.tecnm.mx",
     phone: "777 123 4567",
   })
   const [notificationPreferences, setNotificationPreferences] =
@@ -7482,6 +7921,7 @@ export default function App() {
     )
   const pendingNotificationOperationsRef = useRef(pendingNotificationOperations)
   const notificationSyncLock = useRef(false)
+  const notificationRefreshLock = useRef(false)
   const [selectedCategory, setSelectedCategory] = useState("Robo / Asalto")
   const [reportDraft, setReportDraft] = useState<ReportDraft>({
     category: "Robo / Asalto",
@@ -7495,6 +7935,7 @@ export default function App() {
     position: { lat: CUAUTLA_CENTER[1], lng: CUAUTLA_CENTER[0] },
     radius: 3,
   })
+  const [zoneOrigin, setZoneOrigin] = useState<"home" | "profile">("home")
   const [selectedReport, setSelectedReport] = useState(citizenReports[0])
   const [selectedEmergencyContact, setSelectedEmergencyContact] = useState(
     usefulContacts[0],
@@ -7649,6 +8090,8 @@ export default function App() {
   )
 
   const refreshNotifications = useCallback(async () => {
+    if (notificationRefreshLock.current) return
+    notificationRefreshLock.current = true
     setNotificationsSyncing(true)
     try {
       const { notifications, preferences } = await notificationApi<{
@@ -7675,8 +8118,10 @@ export default function App() {
       if (!pendingNotificationOperationsRef.current.length)
         setNotificationSyncError("")
     } catch (error) {
+      setUserNotifications((current) =>
+        current.length ? current : fallbackNotifications,
+      )
       if (error instanceof NotificationApiError && error.status === 404) {
-        setUserNotifications([])
         setNotificationSyncError("")
         return
       }
@@ -7689,6 +8134,7 @@ export default function App() {
             : "No se pudieron cargar las notificaciones.",
       )
     } finally {
+      notificationRefreshLock.current = false
       setNotificationsSyncing(false)
     }
   }, [])
@@ -7840,6 +8286,7 @@ export default function App() {
           : notification,
       ),
     )
+    if (isSampleNotification(item)) return
     enqueueNotificationOperation("read", {
       id: item.id,
       ids: [...ids],
@@ -7853,11 +8300,13 @@ export default function App() {
     setUserNotifications((current) =>
       current.map((item) => ({ ...item, readAt: item.readAt ?? readAt })),
     )
-    enqueueNotificationOperation("read_all", {
-      all: true,
-      readAt,
-      operationAt: readAt,
-    })
+    if (userNotifications.some((item) => !isSampleNotification(item))) {
+      enqueueNotificationOperation("read_all", {
+        all: true,
+        readAt,
+        operationAt: readAt,
+      })
+    }
     showNotice("Todas las notificaciones se marcaron como leídas")
   }
 
@@ -7874,6 +8323,7 @@ export default function App() {
           : notification,
       ),
     )
+    if (isSampleNotification(item)) return
     enqueueNotificationOperation("unread", {
       id: item.id,
       ids: notificationEventIds(item),
@@ -7887,7 +8337,8 @@ export default function App() {
     setUserNotifications((current) =>
       current.filter((notification) => notification.id !== item.id),
     )
-    enqueueNotificationOperation("archive", { ids })
+    if (!isSampleNotification(item))
+      enqueueNotificationOperation("archive", { ids })
     showNotice("Notificación archivada")
   }
 
@@ -7896,7 +8347,8 @@ export default function App() {
     setUserNotifications((current) =>
       current.filter((notification) => notification.id !== item.id),
     )
-    enqueueNotificationOperation("delete", { ids })
+    if (!isSampleNotification(item))
+      enqueueNotificationOperation("delete", { ids })
     showNotice("Notificación eliminada")
   }
 
@@ -7915,10 +8367,12 @@ export default function App() {
           : notification,
       ),
     )
-    enqueueNotificationOperation("action", {
-      id: item.id,
-      ids: eventIds,
-    })
+    if (!isSampleNotification(item)) {
+      enqueueNotificationOperation("action", {
+        id: item.id,
+        ids: eventIds,
+      })
+    }
     if (item.destination.kind === "report") {
       const report = citizenReports.find(
         (candidate) => candidate.id === item.destination.entityId,
@@ -8022,21 +8476,31 @@ export default function App() {
                     type: "signup",
                     email,
                   })
-                  showNotice(
-                    resendError
-                      ? "Confirma tu correo. Si no ves el mensaje, espera unos minutos para reenviarlo."
-                      : "Tu correo aún no está confirmado. Te enviamos un nuevo enlace.",
-                  )
-                  return false
+                  return {
+                    ok: false,
+                    field: "email",
+                    message: resendError
+                      ? "Este correo aún no está confirmado. Revisa tu bandeja de entrada."
+                      : "Este correo aún no está confirmado. Te enviamos un nuevo enlace.",
+                  }
                 }
-                showNotice(
-                  error?.message === "Invalid login credentials"
-                    ? "Correo o contraseña incorrectos"
-                    : `No fue posible iniciar sesión${
-                        error?.message ? `: ${error.message}` : ""
-                      }`,
-                )
-                return false
+                if (
+                  error?.message === "Invalid login credentials" ||
+                  error?.code === "invalid_credentials"
+                ) {
+                  return {
+                    ok: false,
+                    field: "both",
+                    message:
+                      "El correo o la contraseña no coinciden. Revisa tus datos.",
+                  }
+                }
+                return {
+                  ok: false,
+                  field: "password",
+                  message:
+                    "No pudimos iniciar sesión. Revisa tus datos e inténtalo de nuevo.",
+                }
               }
               setAuthenticated(true)
               setUserNotifications([])
@@ -8047,12 +8511,10 @@ export default function App() {
               }))
               setScreen("home")
               setActiveTab("Inicio")
-              void refreshNotifications()
-              return true
+              return { ok: true }
             }}
             onRegister={() => setScreen("register")}
             onForgot={() => setScreen("forgot")}
-            onNotice={showNotice}
           />
           {notice && (
             <div className="toast auth-toast" role="status">
@@ -8149,7 +8611,6 @@ export default function App() {
                 setUserNotifications([])
                 setScreen("home")
                 setActiveTab("Inicio")
-                void refreshNotifications()
                 showNotice("Cuenta creada correctamente")
               } else {
                 setScreen("login")
@@ -8178,6 +8639,7 @@ export default function App() {
         <section className="phone-app profile-phone" aria-label="Mi perfil">
           <ProfileScreen
             profile={userProfile}
+            location={userZone.address}
             onBack={() => {
               setScreen("home")
               setActiveTab("Inicio")
@@ -8186,6 +8648,10 @@ export default function App() {
             onNotifications={() => {
               setNotificationOrigin("profile")
               setScreen("notificationSettings")
+            }}
+            onLocation={() => {
+              setZoneOrigin("profile")
+              setScreen("zone")
             }}
             onPrivacy={() => setScreen("privacy")}
             onHelp={() => setScreen("help")}
@@ -8207,9 +8673,7 @@ export default function App() {
               setScreen("activity")
               setActiveTab("Actividad")
             }}
-            onLogout={async () => {
-              await unsubscribeFromPush(notificationApiUrl)
-              await supabase.auth.signOut()
+            onLogout={() => {
               setAuthenticated(false)
               setUserNotifications([])
               updatePendingNotificationOperations([])
@@ -8218,8 +8682,11 @@ export default function App() {
               setScreen("login")
               setActiveTab("Inicio")
               showNotice("Sesión cerrada")
+              void Promise.allSettled([
+                unsubscribeFromPush(notificationApiUrl),
+                supabase.auth.signOut(),
+              ])
             }}
-            onNotice={showNotice}
           />
           {notice && (
             <div className="toast profile-toast" role="status">
@@ -8411,11 +8878,14 @@ export default function App() {
         >
           <ZoneConfigurationScreen
             initialZone={userZone}
-            onBack={() => setScreen("home")}
+            onBack={() => {
+              setScreen(zoneOrigin)
+              setActiveTab(zoneOrigin === "profile" ? "Perfil" : "Inicio")
+            }}
             onSave={(zone) => {
               setUserZone(zone)
-              setScreen("home")
-              setActiveTab("Inicio")
+              setScreen(zoneOrigin)
+              setActiveTab(zoneOrigin === "profile" ? "Perfil" : "Inicio")
               showNotice(`Zona guardada con un radio de ${zone.radius} km`)
             }}
             onNotice={showNotice}
@@ -8937,7 +9407,13 @@ export default function App() {
         </div>
 
         <div className="content">
-          <button className="location-card" onClick={() => setScreen("zone")}>
+          <button
+            className="location-card"
+            onClick={() => {
+              setZoneOrigin("home")
+              setScreen("zone")
+            }}
+          >
             <span className="location-icon">
               <Sticker name="pin" />
             </span>

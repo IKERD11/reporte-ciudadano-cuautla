@@ -1,3 +1,13 @@
+## Actualización del 5 de noviembre de 2026
+
+La entrada ciudadana publicada se genera ahora desde `apps/citizen-web`, copiando su carpeta `dist` a la raíz de `IKERD11/reporte-ciudadano-app`. No publicar `dist-qa` ni sustituirla con el compilado Flutter anterior.
+
+Compilar desde la raíz con `scripts/build-citizen-web.ps1`, proporcionando únicamente la clave VAPID pública mediante `VITE_VAPID_PUBLIC_KEY` o el parámetro `-VapidPublicKey`. La salida se comprueba contra `design/figma` antes de publicarse. Las claves privadas permanecen exclusivamente en el servidor.
+
+La referencia de pantallas y limitaciones actuales está en `docs/cobertura-diseno-figma.md`. Las instrucciones Flutter de abajo se conservan como referencia histórica de la publicación anterior; las del panel administrativo continúan vigentes.
+
+---
+
 # Publicación del piloto web — 17 de octubre de 2026
 
 - App ciudadana: https://ikerd11.github.io/reporte-ciudadano-app/
