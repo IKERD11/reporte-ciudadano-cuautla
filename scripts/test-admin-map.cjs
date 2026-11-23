@@ -65,6 +65,8 @@ const server=http.createServer((req,res)=>{
     const artwork=await page.locator('.config-row img').evaluateAll(images=>images.map(img=>img.getAttribute('src').split('/').at(-1)));
     assert.deepEqual(artwork,['robbery.webp','car.webp','spray.webp','users.webp','bulb.webp','cone.webp','paw.webp','mourning.png','more.webp']);
     assert.equal(await page.locator('.config-row').getByText('Activa',{exact:true}).count(),9);
+    assert.equal(await page.locator('.department-entry').count(),8);
+    assert.equal(await page.locator('.category-department').count(),9);
     await page.locator('.config-row').first().locator('..').screenshot({path:path.join(root,'output/dashboard-categories.png')});
     await page.getByRole('button',{name:'Mapa',exact:true}).click();
     await page.waitForFunction(()=>document.querySelector('.admin-map-tools button')?.disabled===false,{timeout:60000});
@@ -80,6 +82,8 @@ const server=http.createServer((req,res)=>{
     await page.screenshot({path:output,fullPage:true});
     await page.locator('.admin-report-pin').last().click({force:true});
     await page.getByRole('heading',{name:'Detalle de reporte',exact:true}).waitFor({timeout:30000});
+    await page.locator('.department-suggestion').waitFor();
+    assert.ok((await page.getByRole('combobox',{name:'Departamento',exact:true}).textContent()).trim()!=='Seleccionar departamento');
     await page.waitForFunction(()=>document.querySelector('.admin-map-tools button')?.disabled===false,{timeout:60000});
     assert.equal(await page.locator('.maplibregl-canvas').count(),1,'Detail map replaces overview cleanly');
     await page.getByRole('button',{name:'Acercar',exact:true}).click();
