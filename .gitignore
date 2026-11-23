@@ -20,3 +20,4 @@ __pycache__/
 tmp/
 backups/
 apps/admin/out/
+apps/admin/public/maps/maplibre-*/
