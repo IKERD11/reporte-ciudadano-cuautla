@@ -57,6 +57,15 @@ const server=http.createServer((req,res)=>{
     await toggle.click();
     assert.equal(await page.getByRole('button',{name:'Cambiar a mapa 3D',exact:true}).getAttribute('aria-pressed'),'false');
     await page.getByRole('button',{name:'Cambiar a mapa 3D',exact:true}).click();
+    await page.getByRole('button',{name:'Configuración',exact:true}).click();
+    const wizard=fs.readFileSync(path.join(root,'apps/mobile/lib/features/reports/report_wizard.dart'),'utf8');
+    const categoryNames=[...wizard.match(/static const choices = \[([\s\S]*?)\];/)[1].matchAll(/'([^']+)'/g)].map(match=>match[1]);
+    assert.deepEqual(await page.locator('.config-row strong').allTextContents(),categoryNames);
+    await page.waitForFunction(()=>[...document.querySelectorAll('.config-row img')].every(img=>img.complete&&img.naturalWidth>0));
+    const artwork=await page.locator('.config-row img').evaluateAll(images=>images.map(img=>img.getAttribute('src').split('/').at(-1)));
+    assert.deepEqual(artwork,['robbery.webp','car.webp','spray.webp','users.webp','bulb.webp','cone.webp','paw.webp','mourning.png','more.webp']);
+    assert.equal(await page.locator('.config-row').getByText('Activa',{exact:true}).count(),9);
+    await page.locator('.config-row').first().locator('..').screenshot({path:path.join(root,'output/dashboard-categories.png')});
     await page.getByRole('button',{name:'Mapa',exact:true}).click();
     await page.waitForFunction(()=>document.querySelector('.admin-map-tools button')?.disabled===false,{timeout:60000});
     await page.getByRole('button',{name:'Acercar',exact:true}).click();
