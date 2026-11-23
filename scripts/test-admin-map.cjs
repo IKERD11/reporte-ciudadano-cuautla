@@ -43,6 +43,14 @@ const server=http.createServer((req,res)=>{
     await page.waitForFunction(()=>!document.querySelector('.admin-map-tools button')?.disabled,{timeout:60000});
     assert.ok(worker,'Local map worker must load under base path');
     await page.waitForFunction(()=>document.querySelectorAll('.admin-report-pin').length>0,{timeout:30000});
+    await page.waitForFunction(()=>[...document.querySelectorAll('.admin-report-pin img')].every(img=>img.complete&&img.naturalWidth>0),{timeout:30000});
+    const markerStyle=await page.locator('.admin-report-pin').first().evaluate(button=>{
+      const style=getComputedStyle(button),image=button.querySelector('img');
+      return {width:style.width,height:style.height,radius:style.borderTopLeftRadius,border:style.borderTopWidth,
+        imageWidth:getComputedStyle(image).width,source:image.getAttribute('src')};
+    });
+    assert.deepEqual([markerStyle.width,markerStyle.height,markerStyle.radius,markerStyle.border,markerStyle.imageWidth],['54px','54px','19px','3px','39px']);
+    assert.ok(markerStyle.source.includes('/branding/report-markers/'));
     await page.waitForTimeout(2500);
     assert.ok(tiles>0,'Real vector tiles must load');
     assert.equal(await page.locator('.maplibregl-canvas').count(),1);
@@ -81,6 +89,8 @@ const server=http.createServer((req,res)=>{
     await fallback.getByRole('button',{name:'Ver mapa 2D',exact:true}).click({timeout:30000});
     await fallback.locator('.leaflet-container').waitFor();
     assert.ok(await fallback.locator('.leaflet-marker-icon').count()>0,'Fallback keeps real report markers');
+    await fallback.waitForFunction(()=>[...document.querySelectorAll('.admin-report-pin img')].every(img=>img.complete&&img.naturalWidth>0),{timeout:30000});
+    assert.equal(await fallback.locator('.admin-report-pin').first().evaluate(button=>getComputedStyle(button).width),'54px');
     await fallback.close();
     await page.getByRole('button',{name:'Cerrar sesión',exact:true}).first().click();
     await page.getByRole('button',{name:'Ingresar al panel',exact:true}).waitFor();

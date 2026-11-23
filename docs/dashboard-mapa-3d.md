@@ -13,7 +13,10 @@ disponibles; no es una reconstrucción fotográfica de la ciudad.
 - Controles para acercar, alejar y restablecer orientación; también admite
   rotación mediante arrastre con botón derecho y gestos táctiles.
 - Ver reportes encuadra las ubicaciones de la página actual, hasta 20 resultados.
-- Cada marcador abre su reporte real y conserva el color correspondiente al estado.
+- Cada marcador abre su reporte real y utiliza el mismo icono 3D y color de
+  categoría que la app ciudadana: recuadro de 54 px, borde blanco de 3 px,
+  esquinas de 19 px, imagen de 39 px y punta inferior. El estado sigue disponible
+  en el título accesible del marcador y en el detalle del reporte.
 - No se inventan coordenadas para reportes sin ubicación válida.
 - La actualización periódica cambia los marcadores sin reiniciar la cámara.
 - Si WebGL no está disponible o el estilo no carga, se puede elegir Ver mapa 2D
@@ -34,7 +37,8 @@ excluye de Git. La exportación estática incluye el worker y respeta
 
 ## Validación
 
-- Pruebas de coordenadas inválidas, orden longitud/latitud y colores por estado.
+- Pruebas de coordenadas inválidas, orden longitud/latitud, categorías y colores.
+- Comparación exacta de las nueve imágenes con los originales de la app.
 - TypeScript y compilación estática de producción.
 - Prueba de navegador con cuenta sintética y Supabase real: carga de mapas
   vectoriales, worker local, alternancia 2D/3D, vista Mapa, actualización de datos,

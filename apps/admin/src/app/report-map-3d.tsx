@@ -3,7 +3,8 @@ import {useEffect,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {Map as LibreMap,Marker,LngLatBounds,NavigationControl,AttributionControl,setWorkerUrl} from 'maplibre-gl';
 import type {Report} from '../lib/api';
-import {reportCoordinate,reportMarkerColor} from '../lib/map-data';
+import {reportCoordinate} from '../lib/map-data';
+import {createReportMarker} from '../lib/report-marker';
 const FlatMap=dynamic(()=>import('./report-map-fallback'),{ssr:false});
 const buildings='admin-buildings-3d';
 const center:[number,number]=[-98.9548,18.8126];
@@ -55,13 +56,8 @@ export default function ReportMap({reports,onSelect}:{reports:Report[];onSelect:
   const bounds=new LngLatBounds();
   for(const report of reports) {
    const coordinate=reportCoordinate(report);if(!coordinate)continue;bounds.extend(coordinate);
-   const button=document.createElement('button');button.type='button';button.className='admin-report-pin';
-   button.style.setProperty('--pin-color',reportMarkerColor(report.status_code));
-   button.setAttribute('aria-label',`Abrir reporte ${report.folio}`);
-   button.title=`${report.folio} · ${report.category} · ${report.status}`;
-   button.append(document.createElement('span'));
-   button.onclick=event=>{event.stopPropagation();selectRef.current(report.id);};
-   markers.current.push(new Marker({element:button,anchor:'bottom'}).setLngLat(coordinate).addTo(map));
+   const button=createReportMarker(report,id=>selectRef.current(id),process.env.NEXT_PUBLIC_BASE_PATH||'');
+   markers.current.push(new Marker({element:button,anchor:'bottom',offset:[0,-7]}).setLngLat(coordinate).addTo(map));
   }
   // Polling updates pins without resetting the user's camera.
   if(!bounds.isEmpty()&&!fitted.current) {
